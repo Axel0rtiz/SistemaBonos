@@ -1,6 +1,8 @@
 // Proteger ruta: solo administradores
 (function checkAdminAuth() {
+  //Verifica que el usuario tenga un token de sesión
   const token = localStorage.getItem('bonos-token') || sessionStorage.getItem('bonos-token');
+  //Si no hay token, redirige a login
   if (!token) {
     window.location.href = 'login.html';
     return;
@@ -255,7 +257,8 @@ function renderFilasSelectorBar() {
 function updateSectorHeader() {
   const currentZona = allZonas.find(z => z.id_zona === selectedZonaId);
   const currentFila = allFilas.find(f => Number(f.id_fila) === Number(selectedFilaId));
-
+  
+  //Se actualiza la cabecera del sector
   const zonaNombre = currentZona ? currentZona.nombre_zona : 'Superior';
   const filaNombre = currentFila ? currentFila.nombre_fila : (selectedFilaId === 'todas' ? 'Todas las filas' : 'T2-32/ Fila L');
   const filaLetter = currentFila ? getFilaLetter(filaNombre) : (allAsientos[0] ? getFilaLetter(allAsientos[0].nombre_fila) : 'L');
@@ -309,6 +312,7 @@ function renderSeatsGrid() {
     return code.includes(q) || codeSpaces.includes(q) || num === q || filaName.toLowerCase().includes(q);
   });
 
+  //Si no se encuentra ningun asiento
   if (filtered.length === 0) {
     container.innerHTML = `
       <div class="text-center py-5 text-muted col-12">

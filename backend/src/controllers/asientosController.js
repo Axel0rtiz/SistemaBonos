@@ -1,18 +1,21 @@
+//Importacion de herramientas
 const db = require('../config/db');
 
 //Mapeos de estados entre el frontend y la base de datos
 const ESTADOS_VALIDOS = ['available', 'reserved', 'sold'];
 const ESTADOS_DB = { available: 'disponible', reserved: 'apartado', sold: 'vendido' };
 const ESTADOS_FRONT = { disponible: 'available', apartado: 'reserved', vendido: 'sold' };
+//Permite las transiciones de estados entre los diferentes estados
 const TRANSICIONES_PERMITIDAS = {
   disponible: ['apartado', 'vendido'],
   apartado: ['disponible', 'vendido'],
   vendido: []
 };
 
-//Se obtiene la lista de todos los asientos y el ultimo cambio que se tiene
+//Función para obtener la lista de todos los asientos y el ultimo cambio que se tiene
 const listarAsientos = async (req, res) => {
   try {
+    //Se obtiene la lista de todos los asientos y el ultimo cambio que se tiene
     const [rows] = await db.execute(`
       SELECT
         app.id_asiento_partido AS id,
@@ -48,13 +51,13 @@ const listarAsientos = async (req, res) => {
   }
 };
 
-//Actualizar el estado de un asiento y registra la modificacion
+//Función para actualizar el estado de un asiento y registrar la modificacion
 const actualizarEstado = async (req, res) => {
   const { estado } = req.body;
   const asientoId = Number(req.params.id);
   const estadoDb = ESTADOS_DB[estado];
 
-  //Valida los datos(Asiento, Estado)
+  //Valida que los datos(Asiento, Estado) sean correctos
   if (!Number.isInteger(asientoId) || !ESTADOS_VALIDOS.includes(estado)) {
     return res.status(400).json({ message: 'Asiento o estado inválido' });
   }
@@ -69,19 +72,24 @@ const actualizarEstado = async (req, res) => {
       [asientoId]
     );
 
+    //Si no se encuentra el asiento
     if (asientos.length === 0) {
       await connection.rollback();
       return res.status(404).json({ message: 'Asiento no encontrado' });
     }
 
+    //Se obtiene el estado anterior del asiento
     const estadoAnterior = asientos[0].estado;
+    //Verificar si el estado anterior es el mismo que el nuevo
     if (estadoAnterior === estadoDb) {
       await connection.commit();
       return res.json({ message: 'El asiento ya tiene ese estado', status: estado });
     }
 
+    //Verificar si la transicion de estados es permitida
     if (!TRANSICIONES_PERMITIDAS[estadoAnterior]?.includes(estadoDb)) {
       await connection.rollback();
+      //Manejo de errores en la transicion de estados
       return res.status(409).json({
         message: estadoAnterior === 'vendido'
           ? 'Un asiento vendido no puede cambiar de estado'
@@ -103,7 +111,9 @@ const actualizarEstado = async (req, res) => {
       [asientoId, req.usuario.id, estadoAnterior, estadoDb]
     );
 
+    //Se confirma la transaccion de los asientos
     await connection.commit();
+    //Se envia la respuesta al cliente
     res.json({ message: 'Estado actualizado', status: ESTADOS_FRONT[estadoDb] });
   } catch (error) {
     await connection.rollback();

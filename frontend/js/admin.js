@@ -1,10 +1,14 @@
 //Proteger ruta: solo admin puede acceder
 (function checkAdminAuth() {
+  //Verifica que el usuario tenga un token de sesión
   const token = localStorage.getItem('bonos-token') || sessionStorage.getItem('bonos-token');
+  //Si no hay token, redirigir a login
   if (!token) { window.location.href = 'login.html'; return; }
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
+    //Si la sesión expira, redirigir a login
     if (payload.exp && Date.now() >= payload.exp * 1000) { logout(); return; }
+    //Si el rol no es admin, redirigir a index
     if (payload.rol !== 'admin') { window.location.href = 'index.html'; return; }
   } catch (e) { logout(); }
 })();
@@ -24,18 +28,20 @@ const userModal = new bootstrap.Modal(userModalElement);
 
 let allUsers = [];
 
-//Token
+//Obtener token de sesión
 function getToken() {
   return localStorage.getItem('bonos-token') || sessionStorage.getItem('bonos-token');
 }
 
 //Petición autenticada al API
 async function apiRequest(url, options = {}) {
+  //Se hace una petición al API
   const response = await fetch(url, {
     ...options,
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}`, ...(options.headers || {}) }
   });
   const data = await response.json().catch(() => ({}));
+  //Si la respuesta no es exitosa, se lanza un error
   if (response.status === 401 || response.status === 403) {
     logout();
     throw new Error('Sesión expirada o acceso denegado');
@@ -84,6 +90,7 @@ function renderUsers() {
   const search = searchUsers.value.trim().toLowerCase();
   const rolFilter = filterRol.value;
 
+  //Filtra los usuarios según la búsqueda y el rol
   const filtered = allUsers.filter(user => {
     const matchesSearch = !search ||
       user.nombre.toLowerCase().includes(search) ||
@@ -97,6 +104,7 @@ function renderUsers() {
     return;
   }
 
+  //Renderiza la tabla de usuarios
   usersTableBody.innerHTML = filtered.map(user => `
     <tr>
       <td>
@@ -126,7 +134,7 @@ function renderUsers() {
 
 //Abrir modal para agregar usuario
 function openAddModal() {
-  document.querySelector('#userModalLabel').textContent = 'Añadir Usuario';
+  document.querySelector('#userModalLabel').textContent = 'Añadir Personal';
   document.querySelector('#editUserId').value = '';
   document.querySelector('#inputNombre').value = '';
   document.querySelector('#inputCorreo').value = '';
@@ -141,7 +149,7 @@ function openAddModal() {
 function openEditModal(userId) {
   const user = allUsers.find(u => u.id === userId);
   if (!user) return;
-  document.querySelector('#userModalLabel').textContent = 'Editar Usuario';
+  document.querySelector('#userModalLabel').textContent = 'Editar Personal';
   document.querySelector('#editUserId').value = user.id;
   document.querySelector('#inputNombre').value = user.nombre;
   document.querySelector('#inputCorreo').value = user.correo;
@@ -175,8 +183,10 @@ async function saveUser() {
 
   try {
     const body = { nombre, correo, rol };
+    //Si se proporciona contraseña, se agrega al body
     if (password) body.password = password;
 
+    //Se guarda el usuario
     if (editId) {
       await apiRequest(`/api/admin/usuarios/${editId}`, { method: 'PATCH', body: JSON.stringify(body) });
     } else {
@@ -199,10 +209,13 @@ async function deleteUser(userId) {
   const user = allUsers.find(u => u.id === userId);
   if (!user) return;
 
+  //Se confirma la eliminación del usuario
   if (!confirm(`¿Estás seguro de eliminar a "${user.nombre}"? Esta acción no se puede deshacer.`)) return;
 
   try {
+    //Se elimina el usuario
     await apiRequest(`/api/admin/usuarios/${userId}`, { method: 'DELETE' });
+    //Se recargan los usuarios
     await loadUsers();
     await loadStats();
   } catch (error) {
@@ -212,14 +225,17 @@ async function deleteUser(userId) {
 
 //Tabs
 function switchTab(tabName) {
+  //Si el tab es partidos, redirige a la página de partidos
   if (tabName === 'partidos') {
     window.location.href = 'partidosAdmin.html';
     return;
   }
+  //Si el tab es filas, redirige a la página de filas
   if (tabName === 'filas') {
     window.location.href = 'filasPartidosAdmin.html';
     return;
   }
+  //Se cambia al tab seleccionado
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
   document.querySelector('#panelUsuarios').classList.toggle('d-none', tabName !== 'usuarios');
   document.querySelector('#panelPartidos').classList.toggle('d-none', tabName !== 'partidos');
@@ -240,6 +256,16 @@ function bindEvents() {
   //Agregar usuario
   btnAddUser.addEventListener('click', openAddModal);
   saveUserBtn.addEventListener('click', saveUser);
+
+  //Toggle password visibility
+  const togglePasswordBtn = document.querySelector('#togglePasswordBtn');
+  if (togglePasswordBtn) {
+    togglePasswordBtn.addEventListener('click', () => {
+      const inputPass = document.querySelector('#inputPassword');
+      const isPassword = inputPass.getAttribute('type') === 'password';
+      inputPass.setAttribute('type', isPassword ? 'text' : 'password');
+    });
+  }
 
   //Editar y eliminar en la tabla
   usersTableBody.addEventListener('click', event => {
