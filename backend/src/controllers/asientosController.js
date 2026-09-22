@@ -6,7 +6,7 @@ const ESTADOS_DB = { available: 'disponible', reserved: 'apartado', sold: 'vendi
 const ESTADOS_FRONT = { disponible: 'available', apartado: 'reserved', vendido: 'sold' };
 const TRANSICIONES_PERMITIDAS = {
   disponible: ['apartado', 'vendido'],
-  apartado: ['vendido', 'disponible'],
+  apartado: ['disponible', 'vendido'],
   vendido: []
 };
 

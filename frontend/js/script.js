@@ -16,7 +16,7 @@
 const statusOptions = { available: 'Disponible', reserved: 'Apartado', sold: 'Vendido' };
 const allowedTransitions = {
   available: ['reserved', 'sold'],
-  reserved: ['sold', 'available'],
+  reserved: ['available', 'sold'],
   sold: []
 };
 let seats = [];

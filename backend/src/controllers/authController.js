@@ -38,7 +38,8 @@ const login = async (req, res) => {
             {
                 id: usuario.id_usuario,
                 nombre: usuario.nombre,
-                correo: usuario.correo
+                correo: usuario.correo,
+                rol: usuario.rol
             },
             JWT_SECRET,
             { expiresIn }
@@ -51,7 +52,8 @@ const login = async (req, res) => {
             user: {
                 id: usuario.id_usuario,
                 nombre: usuario.nombre,
-                correo: usuario.correo
+                correo: usuario.correo,
+                rol: usuario.rol
             }
         });
 

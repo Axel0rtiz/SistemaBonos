@@ -1,4 +1,4 @@
-//Si ya se tiene sesión activa y vigente, redirigir al dashboard
+//Si ya se tiene sesión activa y vigente, redirigir al dashboard correspondiente
 (function checkExistingSession() {
   const token = localStorage.getItem('bonos-token') || sessionStorage.getItem('bonos-token');
   if (token) {
@@ -11,8 +11,9 @@
         sessionStorage.removeItem('bonos-user');
         return;
       }
+      //Redirigir según rol
+      window.location.href = payload.rol === 'admin' ? 'admin.html' : 'index.html';
     } catch (e) {}
-    window.location.href = 'index.html';
   }
 })();
 
@@ -89,8 +90,9 @@ loginForm.addEventListener('submit', async (e) => {
         localStorage.removeItem('bonos-user');
       }
 
-      // Redirigir al dashboard (index.html)
-      window.location.href = 'index.html';
+      // Redirigir según rol del usuario
+      const destino = (data.user && data.user.rol === 'admin') ? 'admin.html' : 'index.html';
+      window.location.href = destino;
     } else {
       loginError.textContent = data.message || 'Usuario o contraseña incorrectos';
       loginError.classList.add('visible');
