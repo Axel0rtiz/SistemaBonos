@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es" data-bs-theme="light">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar Sesión | Rebaño Tours Ags.</title>
+  <meta name="description" content="Acceso al Sistema de Control de Bonos - Rebaño Tours Aguascalientes">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="login-navbar">
+    <div class="container">
+      <a class="brand" href="#">
+        <span class="brand-icon">🐐</span>
+        <span class="brand-name">Rebaño Tours Ags.</span>
+        <span class="brand-separator"></span>
+        <span class="brand-subtitle">Sistema de Control de Bonos</span>
+      </a>
+      <div class="nav-actions">
+        <span class="badge-apertura">Apertura 2026</span>
+        <button id="themeToggle" class="btn-theme-toggle" type="button">
+          🌙 Modo oscuro
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero con textos de fondo -->
+  <section class="login-hero">
+    <p class="hero-label">Acceso Autorizado</p>
+    <h1>Panel Administrativo</h1>
+    <div class="hero-accent"></div>
+  </section>
+
+  <!-- Formulario de Login -->
+  <div class="login-section">
+    <div class="login-card">
+      <h2>Iniciar sesión</h2>
+      <p class="card-subtitle">Ingresa tus credenciales para acceder al Sistema de Control de Bonos</p>
+
+      <div id="loginError" class="login-error">
+        Usuario o contraseña incorrectos
+      </div>
+
+      <form id="loginForm" autocomplete="off">
+        <div class="form-group">
+          <label for="username">Correo electrónico o usuario</label>
+          <div class="input-wrapper">
+            <input type="text" id="username" placeholder="admin@rebanotours.com" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label for="password">Contraseña</label>
+          </div>
+          <div class="input-wrapper">
+            <input type="password" id="password" placeholder="••••••••••••" required>
+            <button type="button" class="toggle-password" id="togglePassword" aria-label="Mostrar contraseña">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="rememberMe" checked>
+          <label for="rememberMe">Mantener la sesión iniciada</label>
+        </div>
+
+        <button type="submit" class="btn-login" id="loginBtn">Iniciar sesión</button>
+      </form>
+      <div class="server-status" id="serverStatus">
+        <div class="status-dot"></div>
+        <span>Servidor activo • Jornada vigente: Apertura 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="login-footer">
+    <p>© 2026 <strong>Rebaño Tours Ags.</strong> — Sistema exclusivo para control de boletaje y bonos Chivas.</p>
+    <p>Todos los derechos reservados. Aguascalientes, México.</p>
+  </footer>
+
+  <script src="js/login.js"></script>
+</body>
+
+</html>
