@@ -179,14 +179,10 @@ async function loadData() {
       document.querySelector('#statZonas').textContent = allZonas.length || 2;
     }
 
-    // Seleccionar fila adecuada para la zona actual
+    // Seleccionar por defecto mostrar todas las filas de la zona
     const filasZona = allFilas.filter(f => f.id_zona === selectedZonaId);
-    if (filasZona.length > 0) {
-      if (!selectedFilaId || !filasZona.some(f => f.id_fila === selectedFilaId)) {
-        selectedFilaId = filasZona[0].id_fila;
-      }
-    } else {
-      selectedFilaId = null;
+    if (!selectedFilaId || (selectedFilaId !== 'todas' && !filasZona.some(f => Number(f.id_fila) === Number(selectedFilaId)))) {
+      selectedFilaId = 'todas';
     }
 
     populateFilaSelect();
@@ -204,7 +200,7 @@ async function loadAsientos() {
 
   try {
     let url = `/api/admin/asientos?id_zona=${selectedZonaId}`;
-    if (selectedFilaId) {
+    if (selectedFilaId && selectedFilaId !== 'todas') {
       url += `&id_fila=${selectedFilaId}`;
     }
 
@@ -228,13 +224,13 @@ function populateFilaSelect() {
   `).join('');
 }
 
-// Barra de pestañas si una zona tiene varias filas
+// Barra de pestañas para cambiar entre filas de una zona
 function renderFilasSelectorBar() {
   const bar = document.querySelector('#filasSelectorBar');
   if (!bar) return;
 
   const filasZona = allFilas.filter(f => f.id_zona === selectedZonaId);
-  if (filasZona.length <= 1) {
+  if (filasZona.length === 0) {
     bar.classList.add('d-none');
     return;
   }
@@ -244,11 +240,11 @@ function renderFilasSelectorBar() {
 
   bar.innerHTML = `
     <button class="fila-tab-pill ${selectedFilaId === 'todas' ? 'active' : ''}" data-fila-id="todas" type="button">
-      Todas las filas (${totalZonaAsientos} as.)
+      Todas las filas (${totalZonaAsientos} lugares)
     </button>
   ` + filasZona.map(f => `
     <button class="fila-tab-pill ${Number(f.id_fila) === Number(selectedFilaId) ? 'active' : ''}" data-fila-id="${f.id_fila}" type="button">
-      ${escapeHtml(f.nombre_fila)} (${f.total_asientos} as.)
+      ${escapeHtml(f.nombre_fila)} (${f.total_asientos} lug.)
     </button>
   `).join('');
 }
@@ -276,16 +272,13 @@ function updateSectorHeader() {
     if (selectedFilaId === 'todas') {
       document.querySelector('#summaryPillText').textContent = `🏛️ Todas las filas / ${totalSeats} Asientos Totales`;
       document.querySelector('#gridTitleText').textContent = `CUADRÍCULA DE ASIENTOS REGISTRADOS EN ZONA ${zonaNombre.toUpperCase()} (${totalSeats} LUGARES)`;
-      document.querySelector('#nextSeatCodeLabel').textContent = `Lugar / ${maxNum + 1}`;
     } else {
       document.querySelector('#summaryPillText').textContent = `${tribuna.split('-')[0] || 'T2'} / F. ${filaLetter} / L. ${minNum} - L. ${maxNum} (${totalSeats} Asientos)`;
       document.querySelector('#gridTitleText').textContent = `CUADRÍCULA DE ASIENTOS ASIGNADOS (SECUENCIA ${filaLetter}/${minNum} AL ${filaLetter}/${maxNum})`;
-      document.querySelector('#nextSeatCodeLabel').textContent = `${filaLetter} / ${maxNum + 1}`;
     }
   } else {
     document.querySelector('#summaryPillText').textContent = `${tribuna} / F. ${filaLetter} / Sin Asientos (0 Asientos)`;
     document.querySelector('#gridTitleText').textContent = `CUADRÍCULA DE ASIENTOS ASIGNADOS (0 LUGARES)`;
-    document.querySelector('#nextSeatCodeLabel').textContent = `${filaLetter} / 1`;
   }
 
   document.querySelector('#subbarFilaName').innerHTML = `<strong>Tribuna ${escapeHtml(filaNombre)}</strong>`;
@@ -312,8 +305,9 @@ function renderSeatsGrid() {
     return code.includes(q) || codeSpaces.includes(q) || num === q || filaName.toLowerCase().includes(q);
   });
 
-  //Si no se encuentra ningun asiento
+  // Si no se encuentra ningun asiento
   if (filtered.length === 0) {
+    container.className = 'seats-interactive-grid';
     container.innerHTML = `
       <div class="text-center py-5 text-muted col-12">
         <p class="mb-2">No se encontraron asientos con el filtro "${escapeHtml(searchQuery)}".</p>
@@ -331,8 +325,8 @@ function renderSeatsGrid() {
     return;
   }
 
-  container.innerHTML = filtered.map((a) => {
-    // Tomar los datos reales del asiento desde la base de datos
+  // Helper para generar el HTML de una tarjeta de asiento
+  const renderSeatCard = (a) => {
     const filaName = a.nombre_fila || defaultFilaNombre;
     const filaLetter = getFilaLetter(filaName);
     const tribuna = getTribunaPrefix(filaName);
@@ -351,7 +345,49 @@ function renderSeatsGrid() {
         </div>
       </div>
     `;
-  }).join('');
+  };
+
+  const uniqueFilas = [...new Set(filtered.map(a => a.id_fila))];
+
+  // Si se está viendo "Todas las filas" o hay asientos de múltiples filas
+  if (selectedFilaId === 'todas' || uniqueFilas.length > 1) {
+    container.className = 'seats-grouped-wrapper';
+
+    // Agrupar por id_fila
+    const grouped = {};
+    filtered.forEach(a => {
+      const fId = a.id_fila;
+      if (!grouped[fId]) grouped[fId] = [];
+      grouped[fId].push(a);
+    });
+
+    container.innerHTML = Object.keys(grouped).map(fId => {
+      const groupSeats = grouped[fId];
+      const sample = groupSeats[0];
+      const filaName = sample.nombre_fila || defaultFilaNombre;
+      const filaLetter = getFilaLetter(filaName);
+      const tribuna = getTribunaPrefix(filaName);
+
+      return `
+        <div class="row-group-block">
+          <div class="row-group-header">
+            <div class="row-group-title">
+              <span class="text-danger">📌</span>
+              <span>Tribuna ${escapeHtml(tribuna)} • <strong>Fila ${escapeHtml(filaLetter)}</strong> (${escapeHtml(filaName)})</span>
+            </div>
+            <span class="row-group-badge">${groupSeats.length} lugares</span>
+          </div>
+          <div class="seats-interactive-grid">
+            ${groupSeats.map(renderSeatCard).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+  } else {
+    // Una sola fila seleccionada
+    container.className = 'seats-interactive-grid';
+    container.innerHTML = filtered.map(renderSeatCard).join('');
+  }
 }
 
 // Configurar todos los eventos de interacción
@@ -384,9 +420,8 @@ function bindEvents() {
 
       selectedZonaId = Number(btn.dataset.zonaId);
 
-      // Auto seleccionar primera fila de la nueva zona
-      const filasZona = allFilas.filter(f => f.id_zona === selectedZonaId);
-      selectedFilaId = filasZona.length > 0 ? filasZona[0].id_fila : null;
+      // Auto seleccionar todas las filas de la nueva zona
+      selectedFilaId = 'todas';
 
       renderFilasSelectorBar();
       await loadAsientos();
@@ -456,15 +491,7 @@ function bindEvents() {
   const saveAsientoBtn = document.querySelector('#saveAsientoBtn');
   if (saveAsientoBtn) saveAsientoBtn.addEventListener('click', saveAsiento);
 
-  // Botón rápido "+ Agregar siguiente lugar (L / 15)"
-  const btnQuickAdd = document.querySelector('#btnQuickAddNextSeat');
-  if (btnQuickAdd) {
-    btnQuickAdd.addEventListener('click', () => {
-      const lastSeat = allAsientos[allAsientos.length - 1];
-      const nextNum = (lastSeat?.numero_asiento || allAsientos.length) + 1;
-      openAddLugarModal(nextNum);
-    });
-  }
+
 
   // Guardar asiento editado
   const saveEditBtn = document.querySelector('#saveEditAsientoBtn');

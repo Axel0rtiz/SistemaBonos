@@ -66,7 +66,7 @@ const obtenerAsientos = async (req, res) => {
     `;
 
     const params = [];
-    if (id_fila) {
+    if (id_fila && id_fila !== 'todas' && !isNaN(Number(id_fila))) {
       query += ' AND a.id_fila = ?';
       params.push(Number(id_fila));
     } else if (id_zona) {
