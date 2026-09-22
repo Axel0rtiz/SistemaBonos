@@ -1,4 +1,4 @@
-// --- Si ya tiene sesión activa y vigente, redirigir al dashboard ---
+//Si ya se tiene sesión activa y vigente, redirigir al dashboard
 (function checkExistingSession() {
   const token = localStorage.getItem('bonos-token') || sessionStorage.getItem('bonos-token');
   if (token) {

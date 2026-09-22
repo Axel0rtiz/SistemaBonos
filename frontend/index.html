@@ -12,14 +12,14 @@
 <body>
   <nav class="navbar navbar-expand-lg sticky-top shadow-sm app-navbar">
     <div class="container">
-      <a class="navbar-brand fw-bold" href="#">🐐 Rebaño Tours Ags.</a>
-      <div class="d-flex gap-2 align-items-center flex-wrap">
-        <span id="userGreeting" class="badge bg-black bg-opacity-25 text-white fw-normal d-none align-items-center gap-1 px-2 py-1">
-          👤 <span id="userName">Usuario</span>
+      <div class="topbar-actions">
+        <span class="live-pill"><span class="live-dot"></span>Datos en vivo</span>
+        <span id="userGreeting" class="user-pill d-none align-items-center gap-2">
+          <span id="userAvatar" class="user-avatar">US</span>
+          <span id="userName">Usuario</span>
         </span>
-        <span class="badge rounded-pill text-bg-danger">Apertura 2026</span>
-        <button id="themeToggle" class="btn btn-outline-light btn-sm" type="button">🌙 Modo oscuro</button>
-        <button id="logoutBtn" class="btn btn-danger btn-sm d-flex align-items-center gap-1 shadow-sm" type="button" title="Cerrar sesión">
+        <button id="themeToggle" class="topbar-button" type="button">☾&nbsp; Modo oscuro</button>
+        <button id="logoutBtn" class="topbar-button logout-button" type="button" title="Cerrar sesión">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
             <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
             <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
@@ -43,7 +43,7 @@
           <div class="summary-card shadow">
             <span class="small text-muted">Total de juegos</span>
             <h2 id="gamesTotal" class="fw-bold mb-0">0</h2>
-            <span class="small">Chivas como local</span>
+            <span class="small">Partidos registrados</span>
           </div>
         </div>
       </div>
@@ -64,7 +64,6 @@
             <option value="available">Disponibles</option>
             <option value="reserved">Apartados</option>
             <option value="sold">Vendidos</option>
-            <option value="blocked">Bloqueados</option>
           </select>
         </div>
         <div class="col-md-3">
@@ -76,6 +75,31 @@
     <ul class="nav nav-pills gap-2 mb-4" id="gameTabs" role="tablist"></ul>
     <div class="tab-content" id="gameTabsContent"></div>
   </main>
+
+  <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="statusModalLabel">Cambiar estado del asiento</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label fw-semibold" for="seatStatusInput">Nuevo estado</label>
+          <select id="seatStatusInput" class="form-select">
+            <option value="available">Disponible</option>
+            <option value="reserved">Apartado</option>
+            <option value="sold">Vendido</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="saveSeatStatusBtn">Guardar estado</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="seatAuditPopover" class="seat-audit-popover d-none" role="tooltip" aria-hidden="true"></div>
 
   <footer class="py-4 text-center small text-muted">
     Sistema de asignacion de lugares / Rebaño Tours AGS / ISC. Daniel Colunga.

@@ -1,4 +1,4 @@
-// --- Proteger ruta: Si no hay token o ya expiró, redirigir al login ---
+//Proteger ruta: Si no hay token o ya expiró, redirigir al login
 (function checkAuth() {
   const token = localStorage.getItem('bonos-token') || sessionStorage.getItem('bonos-token');
   if (!token) {
@@ -13,7 +13,12 @@
   }
 })();
 
-const statusOptions = { available: 'Disponible', reserved: 'Apartado', sold: 'Vendido', blocked: 'Bloqueado' };
+const statusOptions = { available: 'Disponible', reserved: 'Apartado', sold: 'Vendido' };
+const allowedTransitions = {
+  available: ['reserved', 'sold'],
+  reserved: ['sold', 'available'],
+  sold: []
+};
 let seats = [];
 let activeGameId = null;
 const tabs = document.querySelector('#gameTabs');
@@ -24,6 +29,14 @@ const resetBtn = document.querySelector('#resetBtn');
 const themeToggle = document.querySelector('#themeToggle');
 const logoutBtn = document.querySelector('#logoutBtn');
 const gamesTotal = document.querySelector('#gamesTotal');
+const statusModalElement = document.querySelector('#statusModal');
+const statusModal = new bootstrap.Modal(statusModalElement);
+const statusModalLabel = document.querySelector('#statusModalLabel');
+const seatStatusInput = document.querySelector('#seatStatusInput');
+const saveSeatStatusBtn = document.querySelector('#saveSeatStatusBtn');
+const auditPopover = document.querySelector('#seatAuditPopover');
+let selectedSeatId = null;
+let auditHideTimer = null;
 
 function getToken() {
   return localStorage.getItem('bonos-token') || sessionStorage.getItem('bonos-token');
@@ -83,9 +96,55 @@ function groupSeatsByRow(gameSeats) {
   }, {});
 }
 
-function auditTitle(seat) {
-  if (!seat.lastUser || !seat.lastChangedAt) return 'Sin cambios registrados';
-  return `Último cambio: ${seat.lastUser}, ${new Date(seat.lastChangedAt).toLocaleString('es-MX')}`;
+function userInitials(name) {
+  return (name || 'NA').split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase();
+}
+
+function nextStatuses(status) {
+  return allowedTransitions[status] || [];
+}
+
+function statusButtons(seat) {
+  const statuses = nextStatuses(seat.status);
+  if (statuses.length === 0) return '<p class="audit-no-actions">Este asiento no admite más cambios.</p>';
+  return statuses.map(status => `
+    <button type="button" class="audit-quick-btn" data-quick-status="${status}" data-seat-id="${seat.id}">
+      <span class="audit-status-dot ${status}"></span>${escapeHtml(statusOptions[status])}
+    </button>`).join('');
+}
+
+function showAuditPopover(button) {
+  const seat = seats.find(item => item.id === Number(button.dataset.seatId));
+  if (!seat) return;
+  clearTimeout(auditHideTimer);
+  const user = seat.lastUser || 'Sin cambios';
+  const changedAt = seat.lastChangedAt ? new Date(seat.lastChangedAt).toLocaleString('es-MX') : 'Aún no modificado';
+  const currentLabel = statusOptions[seat.status] || seat.status;
+  auditPopover.innerHTML = `
+    <div class="audit-popover-header">
+      <span class="audit-avatar">${escapeHtml(userInitials(user))}</span>
+      <div class="audit-user-info"><strong>${escapeHtml(user)}</strong><span>Editor</span><small>${escapeHtml(changedAt)}</small></div>
+      <span class="audit-current-status ${escapeHtml(seat.status)}">${escapeHtml(currentLabel)}</span>
+    </div>
+    <div class="audit-divider"></div>
+    <div class="audit-quick-label">CAMBIO RÁPIDO DE ESTADO:</div>
+    <div class="audit-quick-actions">${statusButtons(seat)}</div>`;
+  auditPopover.dataset.seatId = seat.id;
+  auditPopover.classList.remove('d-none');
+  auditPopover.setAttribute('aria-hidden', 'false');
+  const rect = button.getBoundingClientRect();
+  const width = auditPopover.offsetWidth;
+  const left = Math.min(Math.max(8, rect.left + rect.width / 2 - width / 2), window.innerWidth - width - 8);
+  const above = rect.top - auditPopover.offsetHeight - 12;
+  auditPopover.style.left = `${left}px`;
+  auditPopover.style.top = `${Math.max(8, above)}px`;
+}
+
+function hideAuditPopover() {
+  auditHideTimer = setTimeout(() => {
+    auditPopover.classList.add('d-none');
+    auditPopover.setAttribute('aria-hidden', 'true');
+  }, 180);
 }
 
 function renderTabs() {
@@ -99,14 +158,11 @@ function renderTabs() {
 
 function renderSeat(seat) {
   const label = statusOptions[seat.status] || seat.status;
-  return `<div class="seat-item" title="${escapeHtml(auditTitle(seat))}">
-    <button class="seat-btn ${escapeHtml(seat.status)}" data-seat="${escapeHtml(seat.seat)}" data-status="${escapeHtml(seat.status)}" type="button">
+  return `<div class="seat-item">
+    <button class="seat-btn ${escapeHtml(seat.status)}" data-seat-id="${seat.id}" data-seat="${escapeHtml(seat.seat)}" data-status="${escapeHtml(seat.status)}" type="button">
       <span class="seat-code-main">${escapeHtml(formatSeat(seat.seat, true))}</span>
       <small><span class="seat-status-dot"></span>${escapeHtml(label)}</small>
     </button>
-    <select class="seat-status-select form-select form-select-sm" data-seat-id="${seat.id}" aria-label="Estado de ${escapeHtml(seat.seat)}">
-      ${Object.entries(statusOptions).map(([value, text]) => `<option value="${value}" ${value === seat.status ? 'selected' : ''}>${text}</option>`).join('')}
-    </select>
   </div>`;
 }
 
@@ -150,17 +206,30 @@ function applyFilters() {
   });
 }
 
-async function changeStatus(id, status, select) {
-  select.disabled = true;
+async function changeStatus(id, status) {
   try {
     await apiRequest(`/api/asientos/${id}/estado`, { method: 'PATCH', body: JSON.stringify({ estado: status }) });
     await loadSeats();
+    return true;
   } catch (error) {
     alert(error.message);
-    select.value = seats.find(seat => seat.id === Number(id))?.status || 'available';
-  } finally {
-    select.disabled = false;
+    return false;
   }
+}
+
+function openStatusModal(button) {
+  const seat = seats.find(item => item.id === Number(button.dataset.seatId));
+  if (!seat) return;
+  selectedSeatId = seat.id;
+  statusModalLabel.textContent = `Cambiar estado: ${formatSeat(seat.seat)}`;
+  const statuses = nextStatuses(seat.status);
+  seatStatusInput.innerHTML = statuses.length
+    ? statuses.map(status => `<option value="${status}">${statusOptions[status]}</option>`).join('')
+    : '<option value="" selected>Sin cambios permitidos</option>';
+  seatStatusInput.disabled = statuses.length === 0;
+  saveSeatStatusBtn.disabled = statuses.length === 0;
+  seatStatusInput.value = statuses[0] || '';
+  statusModal.show();
 }
 
 function bindEvents() {
@@ -172,9 +241,35 @@ function bindEvents() {
     renderContent();
     applyFilters();
   });
-  content.addEventListener('change', event => {
-    const select = event.target.closest('.seat-status-select');
-    if (select) changeStatus(select.dataset.seatId, select.value, select);
+  content.addEventListener('click', event => {
+    const button = event.target.closest('.seat-btn');
+    if (button) openStatusModal(button);
+  });
+  content.addEventListener('pointerover', event => {
+    const button = event.target.closest('.seat-btn');
+    if (button && !button.contains(event.relatedTarget)) showAuditPopover(button);
+  });
+  content.addEventListener('pointerout', event => {
+    const button = event.target.closest('.seat-btn');
+    if (button && !button.contains(event.relatedTarget)) hideAuditPopover();
+  });
+  auditPopover.addEventListener('pointerenter', () => clearTimeout(auditHideTimer));
+  auditPopover.addEventListener('pointerleave', hideAuditPopover);
+  auditPopover.addEventListener('click', async event => {
+    const quickButton = event.target.closest('[data-quick-status]');
+    if (!quickButton) return;
+    auditPopover.querySelectorAll('.audit-quick-btn').forEach(button => { button.disabled = true; });
+    const updated = await changeStatus(quickButton.dataset.seatId, quickButton.dataset.quickStatus);
+    if (updated) hideAuditPopover();
+  });
+  saveSeatStatusBtn.addEventListener('click', async () => {
+    if (!selectedSeatId || !seatStatusInput.value) return;
+    saveSeatStatusBtn.disabled = true;
+    saveSeatStatusBtn.textContent = 'Guardando...';
+    const updated = await changeStatus(selectedSeatId, seatStatusInput.value);
+    if (updated) statusModal.hide();
+    saveSeatStatusBtn.disabled = false;
+    saveSeatStatusBtn.textContent = 'Guardar estado';
   });
   searchInput.addEventListener('input', applyFilters);
   statusFilter.addEventListener('change', applyFilters);
@@ -201,8 +296,11 @@ function initUser() {
     const rawUser = localStorage.getItem('bonos-user') || sessionStorage.getItem('bonos-user');
     const user = rawUser && JSON.parse(rawUser);
     const userName = document.querySelector('#userName');
+    const userAvatar = document.querySelector('#userAvatar');
     if (user && userName) {
-      userName.textContent = user.nombre || user.username || 'Usuario';
+      const displayName = user.nombre || user.username || 'Usuario';
+      userName.textContent = displayName;
+      if (userAvatar) userAvatar.textContent = userInitials(displayName);
       document.querySelector('#userGreeting').classList.replace('d-none', 'd-inline-flex');
     }
   } catch (error) { console.warn('No se pudo cargar información del usuario:', error); }

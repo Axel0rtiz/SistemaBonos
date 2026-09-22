@@ -1,9 +1,16 @@
 const db = require('../config/db');
 
-const ESTADOS_VALIDOS = ['available', 'reserved', 'sold', 'blocked'];
-const ESTADOS_DB = { available: 'disponible', reserved: 'apartado', sold: 'vendido', blocked: 'bloqueado' };
-const ESTADOS_FRONT = { disponible: 'available', apartado: 'reserved', vendido: 'sold', bloqueado: 'blocked' };
+//Mapeos de estados entre el frontend y la base de datos
+const ESTADOS_VALIDOS = ['available', 'reserved', 'sold'];
+const ESTADOS_DB = { available: 'disponible', reserved: 'apartado', sold: 'vendido' };
+const ESTADOS_FRONT = { disponible: 'available', apartado: 'reserved', vendido: 'sold' };
+const TRANSICIONES_PERMITIDAS = {
+  disponible: ['apartado', 'vendido'],
+  apartado: ['vendido', 'disponible'],
+  vendido: []
+};
 
+//Se obtiene la lista de todos los asientos y el ultimo cambio que se tiene
 const listarAsientos = async (req, res) => {
   try {
     const [rows] = await db.execute(`
@@ -15,7 +22,7 @@ const listarAsientos = async (req, res) => {
         p.fecha,
         CONCAT(REPLACE(f.nombre_fila, '/ Fila ', '/'), '/', a.numero_asiento) AS seat,
         LOWER(z.nombre_zona) AS zone,
-        CASE app.estado WHEN 'disponible' THEN 'available' WHEN 'apartado' THEN 'reserved' WHEN 'vendido' THEN 'sold' WHEN 'bloqueado' THEN 'blocked' END AS status,
+        CASE app.estado WHEN 'disponible' THEN 'available' WHEN 'apartado' THEN 'reserved' WHEN 'vendido' THEN 'sold' END AS status,
         h.id_usuario AS lastUserId,
         u.nombre AS lastUser,
         h.fecha_cambio AS lastChangedAt
@@ -41,11 +48,13 @@ const listarAsientos = async (req, res) => {
   }
 };
 
+//Actualizar el estado de un asiento y registra la modificacion
 const actualizarEstado = async (req, res) => {
   const { estado } = req.body;
   const asientoId = Number(req.params.id);
   const estadoDb = ESTADOS_DB[estado];
 
+  //Valida los datos(Asiento, Estado)
   if (!Number.isInteger(asientoId) || !ESTADOS_VALIDOS.includes(estado)) {
     return res.status(400).json({ message: 'Asiento o estado inválido' });
   }
@@ -53,6 +62,8 @@ const actualizarEstado = async (req, res) => {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
+
+    //Consultar estado actual del asiento
     const [asientos] = await connection.execute(
       'SELECT estado FROM Asientos_Por_Partido WHERE id_asiento_partido = ? FOR UPDATE',
       [asientoId]
@@ -69,10 +80,22 @@ const actualizarEstado = async (req, res) => {
       return res.json({ message: 'El asiento ya tiene ese estado', status: estado });
     }
 
+    if (!TRANSICIONES_PERMITIDAS[estadoAnterior]?.includes(estadoDb)) {
+      await connection.rollback();
+      return res.status(409).json({
+        message: estadoAnterior === 'vendido'
+          ? 'Un asiento vendido no puede cambiar de estado'
+          : 'La transición de estado solicitada no está permitida'
+      });
+    }
+
+    //Se guarda el nuevo estado del asiento
     await connection.execute(
       'UPDATE Asientos_Por_Partido SET estado = ? WHERE id_asiento_partido = ?',
       [estadoDb, asientoId]
     );
+
+    //Se registra el cambio en la tabla de historial de cambios
     await connection.execute(
       `INSERT INTO Historial_Cambios
         (id_asiento_partido, id_usuario, estado_anterior, estado_nuevo, fecha_cambio)

@@ -4,8 +4,13 @@ const { listarAsientos, actualizarEstado } = require('../controllers/asientosCon
 
 const router = express.Router();
 
+// Aplicar middleware de autenticación a todas las rutas de asientos
 router.use(verificarToken);
+
+// Ruta GET para consultar la lista de asientos
 router.get('/', listarAsientos);
+
+// Ruta PATCH para actualizar el estado de un asiento específico por su ID
 router.patch('/:id/estado', actualizarEstado);
 
 module.exports = router;

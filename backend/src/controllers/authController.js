@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'clave_secreta_por_defecto';
 
-// --- Login ---
+//Login de usuario
 const login = async (req, res) => {
     try {
         const { username, password, rememberMe } = req.body;
@@ -13,7 +13,7 @@ const login = async (req, res) => {
             return res.status(400).json({ message: 'Usuario y contraseña son requeridos' });
         }
 
-        // Buscar usuario por nombre o correo
+        //Buscar usuario por nombre o correo
         const [rows] = await db.execute(
             'SELECT * FROM usuarios WHERE nombre = ? OR correo = ? LIMIT 1',
             [username, username]
@@ -32,7 +32,7 @@ const login = async (req, res) => {
             return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
         }
 
-        // Generar token JWT: 30 días si eligió mantener sesión, o 24 horas por defecto
+        //Generar token JWT: 30 días si eligió mantener sesión, o 24 horas por defecto
         const expiresIn = rememberMe ? '30d' : '24h';
         const token = jwt.sign(
             {
@@ -44,7 +44,7 @@ const login = async (req, res) => {
             { expiresIn }
         );
 
-        // Responder con token y datos del usuario (sin contraseña)
+        //Se responde con el token y los datos del usuario (sin contraseña)
         res.json({
             message: 'Inicio de sesión exitoso',
             token,
