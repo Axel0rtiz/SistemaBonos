@@ -1,0 +1,455 @@
+/* SELECCIONAR ZONA DE ESTADIO */
+.zona-selector-box {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.zona-box-header {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.zona-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.zona-pills-group {
+  display: inline-flex;
+  align-items: center;
+  background: var(--soft-bg);
+  padding: 0.3rem;
+  border-radius: 0.65rem;
+  gap: 0.35rem;
+}
+
+.zona-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.15rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.zona-pill-btn.active {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.zona-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.zona-pill-btn.active .zona-dot {
+  background: #dc2626;
+}
+
+.zona-badge-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-muted);
+}
+
+.zona-pill-btn.active .zona-badge-count {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+[data-bs-theme="dark"] .zona-pill-btn.active .zona-badge-count {
+  background: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
+}
+
+.search-and-reset {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 280px;
+}
+
+.btn-reset-search {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-muted);
+  border-radius: 0.55rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-reset-search:hover {
+  background: var(--soft-bg);
+  color: var(--text-primary);
+}
+
+/* DETALLE DEL SECTOR Y FILA */
+.sector-header-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  padding: 1.5rem 1.75rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.sector-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.sector-meta-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  margin-bottom: 0.4rem;
+}
+
+.badge-sector-sel {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 0.35rem;
+}
+
+[data-bs-theme="dark"] .badge-sector-sel {
+  background: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
+}
+
+.sector-block-text {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.sector-heading-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.sector-heading-group h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.pill-fila-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid #fca5a5;
+  background: #fff1f2;
+  color: #dc2626;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border-radius: 999px;
+}
+
+[data-bs-theme="dark"] .pill-fila-summary {
+  background: rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #fca5a5;
+}
+
+.sector-action-btns {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.sector-subbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.82rem;
+}
+
+.sector-subbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  color: var(--text-muted);
+}
+
+.sector-subbar-left strong {
+  color: var(--text-primary);
+}
+
+.sector-subbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.subbar-link {
+  color: #dc2626;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.subbar-link:hover {
+  text-decoration: underline;
+}
+
+.subbar-link.muted-link {
+  color: var(--text-muted);
+}
+
+.subbar-link.muted-link:hover {
+  color: var(--text-primary);
+}
+
+/* SELECTOR DE FILAS DE LA ZONA (SI TIENE VARIAS) */
+.filas-selector-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
+  padding-bottom: 0.4rem;
+}
+
+.fila-tab-pill {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: 0.45rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.fila-tab-pill:hover {
+  background: var(--soft-bg);
+}
+
+.fila-tab-pill.active {
+  background: #0f172a;
+  border-color: #0f172a;
+  color: #ffffff;
+}
+
+[data-bs-theme="dark"] .fila-tab-pill.active {
+  background: #334155;
+  border-color: #334155;
+}
+
+/* SECCIÓN CUADRÍCULA DE ASIENTOS */
+.grid-container-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.grid-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.grid-card-header h3 {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.grid-helper-text {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+/* GRID DE 7 COLUMNAS */
+.seats-interactive-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+  .seats-interactive-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .seats-interactive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .seats-interactive-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* TARJETA DE ASIENTO INDIVIDUAL (TOPOLOGÍA FÍSICA) */
+.seat-item-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  padding: 0.8rem 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  position: relative;
+}
+
+.seat-item-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--brand-red);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.seat-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.seat-code-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.seat-row-subtext {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.seat-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.2rem;
+}
+
+.seat-state-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.seat-gear-icon {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+  transition: all 0.2s;
+}
+
+.seat-item-card:hover .seat-gear-icon {
+  opacity: 1;
+  color: var(--brand-red);
+}
+
+/* FOOTER DE LA CUADRÍCULA */
+.grid-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border);
+}
+
+.grid-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.add-next-seat-link {
+  color: #dc2626;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.84rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s;
+}
+
+.add-next-seat-link:hover {
+  text-decoration: underline;
+  transform: translateX(2px);
+}
+
+.badge-akron-header {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.35rem;
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  vertical-align: middle;
+}

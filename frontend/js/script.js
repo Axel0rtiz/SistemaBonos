@@ -59,7 +59,10 @@ async function apiRequest(url, options = {}) {
 async function loadSeats() {
   try {
     seats = await apiRequest('/api/asientos');
-    activeGameId = activeGameId || seats[0]?.gameId;
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramPartido = Number(urlParams.get('partido'));
+    const partidoExiste = paramPartido && seats.some(s => s.gameId === paramPartido);
+    activeGameId = partidoExiste ? paramPartido : (activeGameId || seats[0]?.gameId);
     renderTabs();
     renderContent();
     applyFilters();

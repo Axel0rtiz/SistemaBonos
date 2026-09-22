@@ -21,11 +21,13 @@ const obtenerEstadisticas = async (req, res) => {
     const [[partidos]] = await db.execute('SELECT COUNT(*) AS total FROM Partidos');
     const [[filas]] = await db.execute('SELECT COUNT(*) AS total FROM Filas');
     const [[asientos]] = await db.execute('SELECT COUNT(*) AS total FROM Asientos');
+    const [[torneos]] = await db.execute('SELECT COUNT(*) AS total FROM Torneos');
     res.json({
       usuarios: usuarios.total,
       partidos: partidos.total,
       filas: filas.total,
-      asientos: asientos.total
+      asientos: asientos.total,
+      torneos: torneos.total
     });
   } catch (error) {
     console.error('Error al obtener estadísticas:', error.message);

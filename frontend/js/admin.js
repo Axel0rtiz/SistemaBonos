@@ -212,6 +212,14 @@ async function deleteUser(userId) {
 
 //Tabs
 function switchTab(tabName) {
+  if (tabName === 'partidos') {
+    window.location.href = 'partidosAdmin.html';
+    return;
+  }
+  if (tabName === 'filas') {
+    window.location.href = 'filasPartidosAdmin.html';
+    return;
+  }
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
   document.querySelector('#panelUsuarios').classList.toggle('d-none', tabName !== 'usuarios');
   document.querySelector('#panelPartidos').classList.toggle('d-none', tabName !== 'partidos');
