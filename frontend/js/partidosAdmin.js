@@ -198,7 +198,7 @@ function populateTorneoSelect() {
   }
 
   select.innerHTML = allTorneos.map(t => `
-    <option value="${t.id}" ${t.id === selectedTorneoId ? 'selected' : ''}>
+    <option value="${t.id}" ${Number(t.id) === Number(selectedTorneoId) ? 'selected' : ''}>
       ${escapeHtml(t.nombre_torneo)}
     </option>
   `).join('');
@@ -234,7 +234,7 @@ function renderTorneos() {
   }
 
   allTorneos.forEach((torneo, index) => {
-    const isSelected = torneo.id === selectedTorneoId;
+    const isSelected = Number(torneo.id) === Number(selectedTorneoId);
     const card = document.createElement('div');
     card.className = `torneo-card ${isSelected ? 'active' : ''}`;
     card.dataset.torneoId = torneo.id;
@@ -248,11 +248,35 @@ function renderTorneos() {
         <span class="torneo-badge ${isSelected ? 'badge-active' : ''}">${isSelected ? 'Activo' : 'Certamen'}</span>
       </div>
       <div class="torneo-name">${escapeHtml(torneo.nombre_torneo)}</div>
+      <div class="torneo-dates">${formatShortDate(torneo.fecha_inicio)} - ${formatShortDate(torneo.fecha_fin)}</div>
       <div class="torneo-desc">${countPartidos} partido${countPartidos === 1 ? '' : 's'} programado${countPartidos === 1 ? '' : 's'}</div>
+      <button class="torneo-edit-btn" data-action="edit-torneo" type="button" title="Editar torneo">
+        <i class="bi bi-pencil-fill"></i>
+        Editar
+      </button>
     `;
 
     grid.insertBefore(card, addBtn);
   });
+}
+
+function formatShortDate(value) {
+  const date = new Date(`${String(value).slice(0, 10)}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return 'Fecha pendiente';
+  return date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function toInputDate(value) {
+  return String(value || '').slice(0, 10);
+}
+
+function updateMatchDateLimits() {
+  const dateInput = document.querySelector('#inputFecha');
+  const tournamentId = Number(document.querySelector('#inputTorneoSelect')?.value);
+  const tournament = allTorneos.find(item => Number(item.id) === tournamentId);
+  if (!dateInput || !tournament) return;
+  dateInput.min = toInputDate(tournament.fecha_inicio);
+  dateInput.max = toInputDate(tournament.fecha_fin);
 }
 
 function updateTournamentTitle(name) {
@@ -305,7 +329,7 @@ function renderPartidos() {
 
   // Filtrar según torneo seleccionado (si existe) y filtros de búsqueda
   let filtered = allPartidos.filter(p => {
-    if (selectedTorneoId && p.id_torneo && p.id_torneo !== selectedTorneoId) {
+    if (selectedTorneoId && p.id_torneo && Number(p.id_torneo) !== Number(selectedTorneoId)) {
       return false;
     }
 
@@ -521,6 +545,13 @@ function bindEvents() {
   const torneosGrid = document.querySelector('#torneosGrid');
   if (torneosGrid) {
     torneosGrid.addEventListener('click', (e) => {
+      const editButton = e.target.closest('[data-action="edit-torneo"]');
+      if (editButton) {
+        const card = editButton.closest('.torneo-card');
+        openEditTorneoModal(Number(card.dataset.torneoId));
+        return;
+      }
+
       const card = e.target.closest('.torneo-card:not(.torneo-card-add)');
       if (card) {
         const id = Number(card.dataset.torneoId);
@@ -534,7 +565,9 @@ function bindEvents() {
           updateTournamentTitle(torneo.nombre_torneo);
         }
 
+        activeJornadaFilter = 'todas';
         currentPage = 1;
+        buildJornadasPills();
         renderPartidos();
       }
     });
@@ -549,6 +582,9 @@ function bindEvents() {
   // Guardar Torneo en BD
   const saveTorneoBtn = document.querySelector('#saveTorneoBtn');
   if (saveTorneoBtn) saveTorneoBtn.addEventListener('click', saveTorneo);
+
+  const torneoSelect = document.querySelector('#inputTorneoSelect');
+  if (torneoSelect) torneoSelect.addEventListener('change', updateMatchDateLimits);
 
   // Abrir Modal Añadir Partido
   const btnAddPartido = document.querySelector('#btnAddPartido');
@@ -707,6 +743,7 @@ function openAddPartidoModal() {
   document.querySelector('#editPartidoId').value = '';
   document.querySelector('#partidoModalLabel').textContent = 'Añadir Partido';
   populateTorneoSelect();
+  updateMatchDateLimits();
   if (partidoModalInstance) partidoModalInstance.show();
 }
 
@@ -735,6 +772,7 @@ function openEditPartidoModal(id) {
   if (partido.id_torneo) {
     document.querySelector('#inputTorneoSelect').value = partido.id_torneo;
   }
+  updateMatchDateLimits();
 
   document.querySelector('#partidoModalLabel').textContent = 'Editar Partido';
   if (partidoModalInstance) partidoModalInstance.show();
@@ -773,6 +811,8 @@ async function savePartido() {
         method: 'POST',
         body: JSON.stringify({ nombre_partido, jornada, fecha: fullFecha, id_torneo })
       });
+      selectedTorneoId = id_torneo;
+      activeJornadaFilter = 'todas';
     }
 
     if (partidoModalInstance) partidoModalInstance.hide();
@@ -805,11 +845,28 @@ async function deletePartido(id) {
 // Abrir modal de nuevo torneo
 function openAddTorneoModal() {
   document.querySelector('#torneoForm').reset();
+  document.querySelector('#editTorneoId').value = '';
+  document.querySelector('#torneoModalLabel').textContent = 'Añadir Torneo';
+  document.querySelector('#saveTorneoBtn').textContent = 'Guardar Torneo';
+  if (torneoModalInstance) torneoModalInstance.show();
+}
+
+function openEditTorneoModal(id) {
+  const torneo = allTorneos.find(item => Number(item.id) === Number(id));
+  if (!torneo) return;
+
+  document.querySelector('#editTorneoId').value = torneo.id;
+  document.querySelector('#inputTorneoNombre').value = torneo.nombre_torneo;
+  document.querySelector('#inputTorneoInicio').value = toInputDate(torneo.fecha_inicio);
+  document.querySelector('#inputTorneoFin').value = toInputDate(torneo.fecha_fin);
+  document.querySelector('#torneoModalLabel').textContent = 'Editar Torneo';
+  document.querySelector('#saveTorneoBtn').textContent = 'Guardar Cambios';
   if (torneoModalInstance) torneoModalInstance.show();
 }
 
 // Guardar nuevo certamen en MySQL
 async function saveTorneo() {
+  const id = document.querySelector('#editTorneoId').value;
   const nombre_torneo = document.querySelector('#inputTorneoNombre').value.trim();
   const fecha_inicio = document.querySelector('#inputTorneoInicio').value;
   const fecha_fin = document.querySelector('#inputTorneoFin').value;
@@ -821,11 +878,11 @@ async function saveTorneo() {
 
   const btn = document.querySelector('#saveTorneoBtn');
   btn.disabled = true;
-  btn.textContent = 'Creando en BD...';
+  btn.textContent = id ? 'Actualizando en BD...' : 'Creando en BD...';
 
   try {
-    await apiRequest('/api/admin/torneos', {
-      method: 'POST',
+    await apiRequest(id ? `/api/admin/torneos/${id}` : '/api/admin/torneos', {
+      method: id ? 'PATCH' : 'POST',
       body: JSON.stringify({ nombre_torneo, fecha_inicio, fecha_fin })
     });
 
@@ -835,6 +892,6 @@ async function saveTorneo() {
     alert(`Error al crear torneo: ${e.message}`);
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Crear Torneo';
+    btn.textContent = 'Guardar Torneo';
   }
 }

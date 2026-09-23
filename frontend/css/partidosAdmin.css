@@ -435,6 +435,31 @@
   margin: 0;
 }
 
+.torneo-dates {
+  margin-bottom: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.torneo-edit-btn {
+  align-self: flex-start;
+  margin-top: 0.8rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  background: var(--soft-bg);
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.torneo-edit-btn:hover {
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
 .torneo-card-add {
   border: 2px dashed #d1d5db;
   background: transparent;

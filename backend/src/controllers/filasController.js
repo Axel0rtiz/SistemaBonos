@@ -168,6 +168,17 @@ const actualizarEstadoAsiento = async (req, res) => {
       partidoId = p ? p.minId : 1;
     }
 
+    const [[partido]] = await db.execute(
+      'SELECT DATE(fecha) < CURDATE() AS partido_pasado FROM Partidos WHERE id_partido = ?',
+      [Number(partidoId)]
+    );
+    if (!partido) {
+      return res.status(404).json({ message: 'Partido no encontrado' });
+    }
+    if (partido.partido_pasado) {
+      return res.status(409).json({ message: 'No se pueden modificar los asientos de un partido que ya pasó' });
+    }
+
     //Se actualiza el estado del asiento para el partido
     const [result] = await db.execute(
       'UPDATE Asientos_Por_Partido SET estado = ? WHERE id_asiento = ? AND id_partido = ?',

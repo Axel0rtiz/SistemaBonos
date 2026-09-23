@@ -14,6 +14,7 @@
 })();
 
 const statusOptions = { available: 'Disponible', reserved: 'Apartado', sold: 'Vendido' };
+const MAX_SEATS_PER_LINE = 10;
 const allowedTransitions = {
   available: ['reserved', 'sold'],
   reserved: ['available', 'sold'],
@@ -21,8 +22,10 @@ const allowedTransitions = {
 };
 let seats = [];
 let activeGameId = null;
+let selectedTournamentId = null;
 const tabs = document.querySelector('#gameTabs');
 const content = document.querySelector('#gameTabsContent');
+const tournamentFilter = document.querySelector('#tournamentFilter');
 const searchInput = document.querySelector('#searchInput');
 const statusFilter = document.querySelector('#statusFilter');
 const resetBtn = document.querySelector('#resetBtn');
@@ -62,22 +65,28 @@ async function loadSeats() {
   try {
     seats = await apiRequest('/api/asientos');
 
-    // Solo usar el parámetro de URL ?partido=X en la carga inicial
     if (!_initialLoadDone) {
       _initialLoadDone = true;
+      const latestTournamentId = getLatestTournamentId();
+      selectedTournamentId = latestTournamentId;
+
+      // El parámetro de partido solo se respeta si pertenece al torneo más reciente.
       const urlParams = new URLSearchParams(window.location.search);
       const paramPartido = Number(urlParams.get('partido'));
-      const partidoExiste = paramPartido && seats.some(s => s.gameId === paramPartido);
+      const partidoExiste = paramPartido && seats.some(s =>
+        s.gameId === paramPartido && Number(s.tournamentId) === Number(selectedTournamentId)
+      );
       if (partidoExiste) {
         activeGameId = paramPartido;
       }
     }
 
-    // Si aún no hay activeGameId, usar el primer partido disponible
+    // Seleccionar el primer partido del torneo más reciente si no hay uno activo.
     if (!activeGameId) {
-      activeGameId = seats[0]?.gameId;
+      activeGameId = tournamentSeats()[0]?.gameId;
     }
 
+    renderTournamentFilter();
     renderTabs();
     renderContent();
     applyFilters();
@@ -97,8 +106,46 @@ function getJornadaNum(val) {
   return match ? parseInt(match[0], 10) : 0;
 }
 
+function tournaments() {
+  const map = new Map();
+  seats.forEach(seat => {
+    if (seat.tournamentId == null || map.has(seat.tournamentId)) return;
+    map.set(seat.tournamentId, seat.torneo || 'Torneo sin nombre');
+  });
+  return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1], 'es'));
+}
+
+function getLatestTournamentId() {
+  const latest = tournaments().reduce((current, [id, name]) => {
+    const tournamentSeat = seats.find(seat => Number(seat.tournamentId) === Number(id));
+    if (!current) return { id, start: tournamentSeat?.tournamentStart || '', name };
+
+    const currentDate = String(current.start).slice(0, 10);
+    const candidateDate = String(tournamentSeat?.tournamentStart || '').slice(0, 10);
+    if (candidateDate > currentDate || (candidateDate === currentDate && Number(id) > Number(current.id))) {
+      return { id, start: tournamentSeat?.tournamentStart || '', name };
+    }
+    return current;
+  }, null);
+
+  return latest?.id ?? null;
+}
+
+function tournamentSeats() {
+  if (selectedTournamentId == null) return seats;
+  return seats.filter(seat => Number(seat.tournamentId) === Number(selectedTournamentId));
+}
+
+function renderTournamentFilter() {
+  if (!tournamentFilter) return;
+  const availableTournaments = tournaments();
+  tournamentFilter.innerHTML = availableTournaments.length
+    ? availableTournaments.map(([id, name]) => `<option value="${id}" ${Number(id) === Number(selectedTournamentId) ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')
+    : '<option value="">No hay torneos registrados</option>';
+}
+
 function games() {
-  const map = new Map(seats.map(seat => [seat.gameId, seat]));
+  const map = new Map(tournamentSeats().map(seat => [seat.gameId, seat]));
   return [...map.values()].sort((a, b) => {
     const jA = getJornadaNum(a.label || a.gameId);
     const jB = getJornadaNum(b.label || b.gameId);
@@ -126,6 +173,37 @@ function groupSeatsByRow(gameSeats) {
   }, {});
 }
 
+function getSeatNumber(seat) {
+  const parts = seat.seat.split('/');
+  const number = parts[parts.length - 1];
+  return Number(number);
+}
+
+function splitSeatsIntoLines(rowSeats) {
+  const lines = [];
+  let currentLine = [];
+  let previousNumber = null;
+
+  rowSeats.forEach(seat => {
+    const seatNumber = getSeatNumber(seat);
+    const startsNewLine = currentLine.length > 0 && (
+      currentLine.length >= MAX_SEATS_PER_LINE ||
+      !Number.isNaN(seatNumber) && seatNumber !== previousNumber + 1
+    );
+
+    if (startsNewLine) {
+      lines.push(currentLine);
+      currentLine = [];
+    }
+
+    currentLine.push(seat);
+    previousNumber = seatNumber;
+  });
+
+  if (currentLine.length > 0) lines.push(currentLine);
+  return lines;
+}
+
 function userInitials(name) {
   return (name || 'NA').split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase();
 }
@@ -135,6 +213,7 @@ function nextStatuses(status) {
 }
 
 function statusButtons(seat) {
+  if (seat.gameDatePassed) return '<p class="audit-no-actions">El partido ya pasó; los asientos están bloqueados.</p>';
   const statuses = nextStatuses(seat.status);
   if (statuses.length === 0) return '<p class="audit-no-actions">Este asiento no admite más cambios.</p>';
   return statuses.map(status => `
@@ -179,6 +258,9 @@ function hideAuditPopover() {
 
 function renderTabs() {
   const allGames = games();
+  if (!allGames.some(game => game.gameId === activeGameId)) {
+    activeGameId = allGames[0]?.gameId;
+  }
   tabs.innerHTML = allGames.map(game => `
     <li class="nav-item" role="presentation">
       <button class="nav-link ${game.gameId === activeGameId ? 'active' : ''}" data-game-tab="${game.gameId}" type="button" role="tab">${escapeHtml(game.label)}</button>
@@ -196,8 +278,9 @@ function renderTabs() {
 
 function renderSeat(seat) {
   const label = statusOptions[seat.status] || seat.status;
+  const isLocked = seat.gameDatePassed === true || Number(seat.gameDatePassed) === 1;
   return `<div class="seat-item">
-    <button class="seat-btn ${escapeHtml(seat.status)}" data-seat-id="${seat.id}" data-seat="${escapeHtml(seat.seat)}" data-status="${escapeHtml(seat.status)}" type="button">
+    <button class="seat-btn ${escapeHtml(seat.status)} ${isLocked ? 'seat-locked' : ''}" data-seat-id="${seat.id}" data-seat="${escapeHtml(seat.seat)}" data-status="${escapeHtml(seat.status)}" type="button" ${isLocked ? 'disabled title="Partido finalizado: asiento bloqueado"' : ''}>
       <span class="seat-code-main">${escapeHtml(formatSeat(seat.seat, true))}</span>
       <small><span class="seat-status-dot"></span>${escapeHtml(label)}</small>
     </button>
@@ -215,8 +298,9 @@ function statsHtml(gameSeats) {
 }
 
 function renderContent() {
+  const filteredSeats = tournamentSeats();
   content.innerHTML = games().map(game => {
-    const gameSeats = seats.filter(seat => seat.gameId === game.gameId);
+    const gameSeats = filteredSeats.filter(seat => seat.gameId === game.gameId);
     const groupedSeats = groupSeatsByRow(gameSeats);
     return `<section class="tab-pane ${game.gameId === activeGameId ? 'show active' : 'd-none'}" data-game-content="${game.gameId}">
       <div class="game-card shadow-sm mb-4">
@@ -232,7 +316,7 @@ function renderContent() {
         <div class="zones-layout">${['superior', 'inferior'].map(zone => {
           const zoneSeats = gameSeats.filter(seat => seat.zone === zone);
           return `<div class="zone-section"><div class="zone-title"><h3 class="h5 fw-bold mb-0">Zona ${zone}</h3><span class="badge text-bg-secondary">${zoneSeats.length} lugares</span></div>
-            ${Object.entries(groupSeatsByRow(zoneSeats)).map(([row, rowSeats]) => `<div class="seat-row-group"><div class="seat-row-title">${escapeHtml(row)}</div><div class="seat-grid">${rowSeats.map(renderSeat).join('')}</div></div>`).join('')}</div>`;
+            ${Object.entries(groupSeatsByRow(zoneSeats)).map(([row, rowSeats]) => `<div class="seat-row-group"><div class="seat-row-title">${escapeHtml(row)}</div>${splitSeatsIntoLines(rowSeats).map(line => `<div class="seat-grid">${line.map(renderSeat).join('')}</div>`).join('')}</div>`).join('')}</div>`;
         }).join('')}</div>
       </div>
     </section>`;
@@ -275,6 +359,14 @@ function openStatusModal(button) {
 }
 
 function bindEvents() {
+  tournamentFilter.addEventListener('change', () => {
+    selectedTournamentId = tournamentFilter.value ? Number(tournamentFilter.value) : null;
+    activeGameId = null;
+    renderTabs();
+    renderContent();
+    applyFilters();
+  });
+
   tabs.addEventListener('click', event => {
     const tab = event.target.closest('[data-game-tab]');
     if (!tab) return;

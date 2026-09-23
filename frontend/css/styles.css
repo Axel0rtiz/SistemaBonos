@@ -163,6 +163,17 @@ body {
   border-color: var(--brand-red);
 }
 
+.schedule-toolbar {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  max-width: 360px;
+}
+
+.schedule-toolbar .form-label {
+  white-space: nowrap;
+}
+
 .zone-title {
   display: flex;
   justify-content: space-between;
@@ -206,6 +217,12 @@ body {
   background: rgba(239, 68, 68, .15);
   text-decoration: line-through;
   opacity: .75;
+}
+
+.seat-btn.seat-locked {
+  cursor: not-allowed;
+  filter: grayscale(.15);
+  opacity: .65;
 }
 
 
@@ -281,25 +298,15 @@ body {
 }
 
 .seat-row-group .seat-grid {
-  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-}
-
-.seat-row-group .seat-grid {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: .45rem;
-  overflow-x: auto;
-  padding-bottom: .25rem;
-  scrollbar-width: thin;
+  margin-bottom: .45rem;
+  padding-bottom: .05rem;
 }
 
-.seat-row-group .seat-grid::-webkit-scrollbar {
-  height: 6px;
-}
-
-.seat-row-group .seat-grid::-webkit-scrollbar-thumb {
-  background: rgba(127,127,127,.35);
-  border-radius: 999px;
+.seat-row-group .seat-grid:last-child {
+  margin-bottom: 0;
 }
 
 .seat-btn {
@@ -424,6 +431,19 @@ body {
 
 @media (max-width: 576px) {
   .audit-quick-actions { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 700px) {
+  .seat-row-group .seat-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .seat-row-group .seat-item,
+  .seat-row-group .seat-btn {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 .seat-code-main {

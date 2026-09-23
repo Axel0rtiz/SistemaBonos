@@ -1,6 +1,26 @@
 //Importacion de Herramientas
 const db = require('../config/db');
 
+function dateOnly(value) {
+  if (value instanceof Date) {
+    return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
+  }
+  return String(value || '').slice(0, 10);
+}
+
+function isDateWithinRange(date, start, end) {
+  const matchDate = dateOnly(date);
+  return /^\d{4}-\d{2}-\d{2}$/.test(matchDate) && matchDate >= dateOnly(start) && matchDate <= dateOnly(end);
+}
+
+async function getTournamentRange(connection, tournamentId) {
+  const [rows] = await connection.execute(
+    'SELECT fecha_inicio, fecha_fin FROM Torneos WHERE id_torneo = ?',
+    [tournamentId]
+  );
+  return rows[0] || null;
+}
+
 //Obtiene la lista de partidos con estadísticas de asientos por partido
 const listarPartidos = async (req, res) => {
   try {
@@ -66,7 +86,16 @@ const crearPartido = async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    const torneoId = id_torneo || 1;
+    const torneoId = Number(id_torneo) || 1;
+    const torneo = await getTournamentRange(connection, torneoId);
+    if (!torneo) {
+      await connection.rollback();
+      return res.status(400).json({ message: 'El torneo seleccionado no existe' });
+    }
+    if (!isDateWithinRange(fecha, torneo.fecha_inicio, torneo.fecha_fin)) {
+      await connection.rollback();
+      return res.status(400).json({ message: 'La fecha del partido debe estar dentro del periodo del torneo' });
+    }
 
     //Se inserta el nuevo partido
     const [result] = await connection.execute(
@@ -103,6 +132,22 @@ const actualizarPartido = async (req, res) => {
   const { nombre_partido, jornada, fecha } = req.body;
 
   try {
+    const [[partidoActual]] = await db.execute(
+      `SELECT p.fecha, p.id_torneo, t.fecha_inicio, t.fecha_fin
+       FROM Partidos p
+       INNER JOIN Torneos t ON t.id_torneo = p.id_torneo
+       WHERE p.id_partido = ?`,
+      [id]
+    );
+    if (!partidoActual) {
+      return res.status(404).json({ message: 'Partido no encontrado' });
+    }
+
+    const fechaFinal = fecha || partidoActual.fecha;
+    if (!isDateWithinRange(fechaFinal, partidoActual.fecha_inicio, partidoActual.fecha_fin)) {
+      return res.status(400).json({ message: 'La fecha del partido debe estar dentro del periodo del torneo' });
+    }
+
     //Se preparan los campos a actualizar
     const fields = [];
     const values = [];
@@ -121,10 +166,6 @@ const actualizarPartido = async (req, res) => {
     const [result] = await db.execute(`UPDATE Partidos SET ${fields.join(', ')} WHERE id_partido = ?`, values);
 
     //Si no se encuentra el partido
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Partido no encontrado' });
-    }
-
     res.json({ message: 'Partido actualizado exitosamente' });
   } catch (error) {
     console.error('Error al actualizar partido:', error.message);
@@ -168,19 +209,59 @@ const crearTorneo = async (req, res) => {
   const { nombre_torneo, fecha_inicio, fecha_fin } = req.body;
 
   //Valida que el nombre del torneo sea correcto
-  if (!nombre_torneo) {
-    return res.status(400).json({ message: 'Nombre del torneo es requerido' });
+  if (!nombre_torneo || !fecha_inicio || !fecha_fin) {
+    return res.status(400).json({ message: 'Nombre, fecha de inicio y fecha de fin son requeridos' });
+  }
+  if (dateOnly(fecha_inicio) > dateOnly(fecha_fin)) {
+    return res.status(400).json({ message: 'La fecha de inicio no puede ser posterior a la fecha de fin' });
   }
   try {
     //Se inserta el nuevo torneo
     const [result] = await db.execute(
       'INSERT INTO Torneos (nombre_torneo, fecha_inicio, fecha_fin) VALUES (?, ?, ?)',
-      [nombre_torneo, fecha_inicio || new Date(), fecha_fin || new Date()]
+      [nombre_torneo, fecha_inicio, fecha_fin]
     );
     res.status(201).json({ message: 'Torneo creado exitosamente', id: result.insertId });
   } catch (error) {
     console.error('Error al crear torneo:', error.message);
     res.status(500).json({ message: 'No se pudo crear el torneo' });
+  }
+};
+
+const actualizarTorneo = async (req, res) => {
+  const torneoId = Number(req.params.id);
+  const { nombre_torneo, fecha_inicio, fecha_fin } = req.body;
+
+  if (!Number.isInteger(torneoId) || !nombre_torneo || !fecha_inicio || !fecha_fin) {
+    return res.status(400).json({ message: 'Nombre, fecha de inicio y fecha de fin son requeridos' });
+  }
+  if (dateOnly(fecha_inicio) > dateOnly(fecha_fin)) {
+    return res.status(400).json({ message: 'La fecha de inicio no puede ser posterior a la fecha de fin' });
+  }
+
+  try {
+    const [torneos] = await db.execute('SELECT id_torneo FROM Torneos WHERE id_torneo = ?', [torneoId]);
+    if (torneos.length === 0) {
+      return res.status(404).json({ message: 'Torneo no encontrado' });
+    }
+
+    const [partidos] = await db.execute(
+      'SELECT fecha FROM Partidos WHERE id_torneo = ?',
+      [torneoId]
+    );
+    const partidoFueraDeRango = partidos.some(partido => !isDateWithinRange(partido.fecha, fecha_inicio, fecha_fin));
+    if (partidoFueraDeRango) {
+      return res.status(409).json({ message: 'El nuevo periodo deja uno o más partidos fuera del rango del torneo' });
+    }
+
+    await db.execute(
+      'UPDATE Torneos SET nombre_torneo = ?, fecha_inicio = ?, fecha_fin = ? WHERE id_torneo = ?',
+      [nombre_torneo, fecha_inicio, fecha_fin, torneoId]
+    );
+    res.json({ message: 'Torneo actualizado exitosamente' });
+  } catch (error) {
+    console.error('Error al actualizar torneo:', error.message);
+    res.status(500).json({ message: 'No se pudo actualizar el torneo' });
   }
 };
 
@@ -190,5 +271,6 @@ module.exports = {
   crearPartido,
   actualizarPartido,
   eliminarPartido,
-  crearTorneo
+  crearTorneo,
+  actualizarTorneo
 };

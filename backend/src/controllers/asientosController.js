@@ -20,10 +20,13 @@ const listarAsientos = async (req, res) => {
       SELECT
         app.id_asiento_partido AS id,
         app.id_partido AS gameId,
+        p.id_torneo AS tournamentId,
         CONCAT('J', p.jornada) AS label,
         p.nombre_partido AS title,
         p.fecha,
+        DATE(p.fecha) < CURDATE() AS gameDatePassed,
         COALESCE(t.nombre_torneo, '') AS torneo,
+        t.fecha_inicio AS tournamentStart,
         CONCAT(REPLACE(f.nombre_fila, '/ Fila ', '/'), '/', a.numero_asiento) AS seat,
         LOWER(z.nombre_zona) AS zone,
         CASE app.estado WHEN 'disponible' THEN 'available' WHEN 'apartado' THEN 'reserved' WHEN 'vendido' THEN 'sold' END AS status,
@@ -70,7 +73,11 @@ const actualizarEstado = async (req, res) => {
 
     //Consultar estado actual del asiento
     const [asientos] = await connection.execute(
-      'SELECT estado FROM Asientos_Por_Partido WHERE id_asiento_partido = ? FOR UPDATE',
+      `SELECT app.estado, DATE(p.fecha) < CURDATE() AS partido_pasado
+       FROM Asientos_Por_Partido app
+       INNER JOIN Partidos p ON p.id_partido = app.id_partido
+       WHERE app.id_asiento_partido = ?
+       FOR UPDATE`,
       [asientoId]
     );
 
@@ -78,6 +85,11 @@ const actualizarEstado = async (req, res) => {
     if (asientos.length === 0) {
       await connection.rollback();
       return res.status(404).json({ message: 'Asiento no encontrado' });
+    }
+
+    if (asientos[0].partido_pasado) {
+      await connection.rollback();
+      return res.status(409).json({ message: 'No se pueden modificar los asientos de un partido que ya pasó' });
     }
 
     //Se obtiene el estado anterior del asiento

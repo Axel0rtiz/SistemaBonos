@@ -295,7 +295,7 @@
     </div>
   </div>
 
-  <!-- Modal: Añadir Torneo-->
+  <!-- Modal: Añadir / Editar Torneo-->
   <div class="modal fade" id="torneoModal" tabindex="-1" aria-labelledby="torneoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content partido-modal-content">
@@ -321,6 +321,7 @@
         <!-- Body -->
         <div class="modal-body partido-modal-body">
           <form id="torneoForm" autocomplete="off">
+            <input type="hidden" id="editTorneoId">
             <!-- Nombre -->
             <div class="pm-field mb-3">
               <div class="d-flex justify-content-between align-items-center mb-1">

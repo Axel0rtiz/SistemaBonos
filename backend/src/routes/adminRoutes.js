@@ -1,7 +1,7 @@
 const express = require('express');
 const verificarToken = require('../middlewares/verificarToken');
 const { listarUsuarios, obtenerEstadisticas, crearUsuario, actualizarUsuario, eliminarUsuario } = require('../controllers/adminController');
-const { listarPartidos, listarTorneos, crearPartido, actualizarPartido, eliminarPartido, crearTorneo } = require('../controllers/partidosController');
+const { listarPartidos, listarTorneos, crearPartido, actualizarPartido, eliminarPartido, crearTorneo, actualizarTorneo } = require('../controllers/partidosController');
 const { listarZonasYFilas, obtenerAsientos, crearFila, crearAsiento, actualizarEstadoAsiento, actualizarAsiento, eliminarAsiento, eliminarFila } = require('../controllers/filasController');
 
 const router = express.Router();
@@ -29,6 +29,7 @@ router.patch('/partidos/:id', actualizarPartido);
 router.delete('/partidos/:id', eliminarPartido);
 router.get('/torneos', listarTorneos);
 router.post('/torneos', crearTorneo);
+router.patch('/torneos/:id', actualizarTorneo);
 
 // Rutas de Filas, Zonas y Asientos
 router.get('/zonas-filas', listarZonasYFilas);
