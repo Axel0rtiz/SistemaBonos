@@ -8,6 +8,7 @@
   <meta name="description" content="Configuración de torneos y administración de partidos en el Estadio Akron">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="css/admin.css">
   <link rel="stylesheet" href="css/partidosAdmin.css">
 </head>
@@ -25,9 +26,6 @@
         <span class="badge-live" id="navbarTorneoBadge">Apertura 2026</span>
       </div>
       <div class="nav-right">
-        <span class="badge-datos">
-          <span class="dot-live"></span> Datos en vivo
-        </span>
         <button id="themeToggle" class="btn-theme" type="button">🌙 Modo oscuro</button>
         <div class="user-badge" id="userBadge">
           <span class="user-avatar" id="userAvatar">AO</span>
@@ -37,10 +35,7 @@
           </div>
         </div>
         <button id="logoutBtn" class="btn-logout" type="button" title="Cerrar sesión">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
-            <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
-          </svg>
+          <i class="bi bi-box-arrow-right"></i>
         </button>
       </div>
     </div>
@@ -53,12 +48,10 @@
         <div>
           <div class="breadcrumb-nav">
             <span>MÓDULO DE CONTROL</span>
-            <span>/</span>
-            <span>PANEL MAESTRO DE CALENDARIO</span>
           </div>
           <h1>Gestión de Partidos y Torneos</h1>
           <p class="header-desc">
-            Configuración de torneos oficiales, programación de jornadas y administración de eventos en el Estadio Akron para el control de bonos y viajes.
+            Configuración de torneos oficiales y programación de jornadas.
           </p>
         </div>
         <div class="hero-stats-box">
@@ -85,17 +78,13 @@
       <div class="admin-tabs">
         <div class="tab-nav-group">
           <a href="admin.html" class="tab-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-.25.02-.474.05-.683.15-1.03.735-2.072 1.886-3.037M3.5 7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/></svg>
+            <i class="bi bi-people-fill"></i>
             Usuarios <span class="tab-count" id="tabUsuariosCount">0</span>
           </a>
           <button class="tab-btn active active-pill" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/></svg>
+            <i class="bi bi-calendar-event"></i>
             Partidos <span class="tab-count" id="tabPartidosCount">0 J</span>
           </button>
-          <a href="filasPartidosAdmin.html" class="tab-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14 4.5V9H2V4.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5M2 10h12v1.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5zm0 0"/><path d="M0 4.5A1.5 1.5 0 0 1 1.5 3h13A1.5 1.5 0 0 1 16 4.5v7a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5z"/></svg>
-            Filas / Asientos <span class="tab-count" id="tabFilasCount">0 F</span>
-          </a>
         </div>
       </div>
     </div>
@@ -114,7 +103,7 @@
           <p class="section-subtitle">Selecciona el certamen para consultar o editar sus respectivas jornadas</p>
         </div>
         <button class="btn-dark-custom" id="btnAddTorneo" type="button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/></svg>
+          <i class="bi bi-plus-lg"></i>
           Añadir Torneo
         </button>
       </div>
@@ -138,10 +127,10 @@
             <h3 id="currentTournamentTitle">Partidos Registrados</h3>
             <span class="badge-partidos-oficiales" id="badgeTorneoActivo">Base de Datos</span>
           </div>
-          <p class="section-subtitle">Estadio Akron, Zapopan, Jalisco • Control central de boletaje y asientos asignados por partido</p>
+          <p class="section-subtitle">Control central de boletaje y asientos asignados por partido</p>
         </div>
         <button class="btn-red-custom" id="btnAddPartido" type="button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/></svg>
+          <i class="bi bi-plus-lg"></i>
           Añadir partido
         </button>
       </div>
@@ -149,7 +138,7 @@
       <!-- Barra de Filtros, Sede y Leyenda -->
       <div class="partidos-filter-bar">
         <div class="search-input-group">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="text-muted" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>
+          <i class="bi bi-search text-muted"></i>
           <input type="text" id="searchPartidos" placeholder="Buscar por jornada o rival (ej. J1, Equipo A, América)...">
         </div>
 
@@ -193,22 +182,17 @@
         <div class="partido-modal-header">
           <div class="pm-header-left">
             <div class="pm-header-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
-              </svg>
+              <i class="bi bi-calendar-event"></i>
             </div>
             <div class="pm-header-text">
               <div class="pm-header-title-row">
                 <h2 class="modal-title" id="partidoModalLabel">Añadir Partido</h2>
                 <span class="pm-badge">PROGRAMACIÓN</span>
               </div>
-              <p class="pm-subtitle">Registra el encuentro en la base de datos para la gestión de bonos</p>
             </div>
           </div>
           <button type="button" class="pm-close-btn" data-bs-dismiss="modal" aria-label="Cerrar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
-            </svg>
+            <i class="bi bi-x-lg"></i>
           </button>
         </div>
 
@@ -225,7 +209,7 @@
                     <!-- Opciones cargadas dinámicamente -->
                   </select>
                   <span class="pm-select-arrow">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>
+                    <i class="bi bi-chevron-down"></i>
                   </span>
                 </div>
               </div>
@@ -244,7 +228,7 @@
               </div>
               <div class="pm-input-wrapper">
                 <span class="pm-input-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586zm3.5 4a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/></svg>
+                  <i class="bi bi-hash"></i>
                 </span>
                 <input type="number" class="pm-input" id="inputJornada" min="1" max="50" placeholder="10" required>
               </div>
@@ -259,7 +243,7 @@
               </div>
               <div class="pm-input-wrapper">
                 <span class="pm-input-icon text-danger">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641l2.5-8.5z"/></svg>
+                  <i class="bi bi-lightning-charge"></i>
                 </span>
                 <input type="text" class="pm-input" id="inputNombrePartido" placeholder="Chivas vs Querétaro" required>
               </div>
@@ -271,7 +255,7 @@
                 <label class="pm-label mb-1" for="inputFecha">3. FECHA <span class="pm-req">*</span></label>
                 <div class="pm-input-wrapper">
                   <span class="pm-input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/></svg>
+                    <i class="bi bi-calendar"></i>
                   </span>
                   <input type="date" class="pm-input" id="inputFecha" required>
                 </div>
@@ -280,7 +264,7 @@
                 <label class="pm-label mb-1" for="inputHora">HORA DE INICIO <span class="pm-req">*</span></label>
                 <div class="pm-input-wrapper">
                   <span class="pm-input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                    <i class="bi bi-clock"></i>
                   </span>
                   <input type="time" class="pm-input" id="inputHora" value="19:00" required>
                 </div>
@@ -290,7 +274,7 @@
             <!-- Callout Note Box -->
             <div class="pm-callout">
               <span class="pm-callout-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+                <i class="bi bi-info-circle-fill"></i>
               </span>
               <div class="pm-callout-text">
                 <strong>Asignación automática de lugares:</strong> Al guardar, se habilitarán los asientos predeterminados registrados en la base de datos con estado <span class="text-success fw-bold">• Disponible</span> para Rebaño Tours.
@@ -303,7 +287,7 @@
         <div class="modal-footer personal-modal-footer">
           <button type="button" class="pm-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
           <button type="button" class="pm-btn-save" id="savePartidoBtn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/></svg>
+            <i class="bi bi-check-lg"></i>
             Guardar Partido
           </button>
         </div>
@@ -319,9 +303,7 @@
         <div class="partido-modal-header">
           <div class="pm-header-left">
             <div class="pm-header-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5c0 .538-.012 1.05-.034 1.536a3 3 0 1 1-1.133 5.89c-.711 1.042-1.758 1.76-2.833 2.012v.756h2.25a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75H4.75a.75.75 0 0 1-.75-.75v-1.5a.75.75 0 0 1 .75-.75h2.25v-.756C5.925 9.462 4.878 8.744 4.167 7.702a3 3 0 1 1-1.133-5.89C3.012 1.33 3 0 3 .5m.41 1.782a2 2 0 1 0 .23 3.987A4.2 4.2 0 0 1 3 4.282zm10.18 3.987a2 2 0 1 0 .23-3.987c0 .7-.078 1.378-.23 1.987M8 8.75A3.25 3.25 0 0 0 11.25 5.5c0-1.428-.485-2.73-1.282-3.5H6.032C5.235 2.77 4.75 4.072 4.75 5.5A3.25 3.25 0 0 0 8 8.75"/>
-              </svg>
+              <i class="bi bi-trophy"></i>
             </div>
             <div class="pm-header-text">
               <div class="pm-header-title-row">
@@ -332,9 +314,7 @@
             </div>
           </div>
           <button type="button" class="pm-close-btn" data-bs-dismiss="modal" aria-label="Cerrar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
-            </svg>
+            <i class="bi bi-x-lg"></i>
           </button>
         </div>
 
@@ -349,7 +329,7 @@
               </div>
               <div class="pm-input-wrapper">
                 <span class="pm-input-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d="M3 4.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0 3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0 3a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5"/></svg>
+                  <i class="bi bi-trophy"></i>
                 </span>
                 <input type="text" class="pm-input" id="inputTorneoNombre" placeholder="Apertura 2026" required>
               </div>
@@ -361,7 +341,7 @@
                 <label class="pm-label mb-1" for="inputTorneoInicio">Fecha Inicio <span class="pm-req">*</span></label>
                 <div class="pm-input-wrapper">
                   <span class="pm-input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/></svg>
+                    <i class="bi bi-calendar"></i>
                   </span>
                   <input type="date" class="pm-input" id="inputTorneoInicio" required>
                 </div>
@@ -372,7 +352,7 @@
                 <label class="pm-label mb-1" for="inputTorneoFin">Fecha Fin <span class="pm-req">*</span></label>
                 <div class="pm-input-wrapper">
                   <span class="pm-input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/></svg>
+                    <i class="bi bi-calendar"></i>
                   </span>
                   <input type="date" class="pm-input" id="inputTorneoFin" required>
                 </div>
@@ -386,7 +366,7 @@
         <div class="modal-footer personal-modal-footer">
           <button type="button" class="pm-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
           <button type="button" class="pm-btn-save" id="saveTorneoBtn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/></svg>
+            <i class="bi bi-check-lg"></i>
             Guardar Torneo
           </button>
         </div>
@@ -396,19 +376,36 @@
 
   <!-- Modal: Info y Detalle de Partido -->
   <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title h5" id="infoModalLabel">Detalle del Partido</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content partido-modal-content">
+        <!-- Red Header Banner -->
+        <div class="partido-modal-header">
+          <div class="pm-header-left">
+            <div class="pm-header-icon">
+              <i class="bi bi-calendar-event"></i>
+            </div>
+            <div class="pm-header-text">
+              <div class="pm-header-title-row">
+                <h2 class="modal-title" id="infoModalLabel">Detalle del Partido</h2>
+              </div>
+              <p class="pm-subtitle">Rebaño Tours Ags. • Control de Asientos</p>
+            </div>
+          </div>
+          <button type="button" class="pm-close-btn" data-bs-dismiss="modal" aria-label="Cerrar">
+            <i class="bi bi-x-lg"></i>
+          </button>
         </div>
-        <div class="modal-body" id="infoModalBody">
-          <!-- Inyectado dinámicamente -->
+
+        <!-- Body (Dynamic Content) -->
+        <div class="modal-body partido-modal-body p-4" id="infoModalBody">
+          <!-- Inyectado dinámicamente vía partidosAdmin.js -->
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          <a href="index.html" class="btn btn-danger" id="infoModalSeatsBtn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5z"/></svg>
+
+        <!-- Footer -->
+        <div class="modal-footer personal-modal-footer">
+          <button type="button" class="pm-btn-cancel" data-bs-dismiss="modal">Cerrar</button>
+          <a href="index.html" class="pm-btn-save text-decoration-none" id="infoModalSeatsBtn">
+            <i class="bi bi-grid-3x3-gap-fill me-1"></i>
             Ver Mapa de Asientos
           </a>
         </div>
@@ -420,8 +417,7 @@
   <footer class="admin-footer">
     <div class="container-fluid px-4">
       <div class="footer-content">
-        <span><strong>Rebaño Tours Ags.</strong> • Plataforma Oficial de Asignación y Control de Bonos Chivas</span>
-        <span>Versión 2.4.0-prod • <span class="footer-link" id="soporteLink">Soporte Técnico</span></span>
+        <span><strong>Rebaño Tours Ags.</strong> • Plataforma Oficial de Boletaje & Bonos</span>
       </div>
     </div>
   </footer>

@@ -6,10 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Panel de Administración | Rebaño Tours Ags.</title>
   <meta name="description" content="Panel administrativo del Sistema de Control de Bonos">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/partidosAdmin.css">
 </head>
 
 <body>
@@ -25,9 +26,6 @@
         <span class="badge-live">Apertura 2026</span>
       </div>
       <div class="nav-right">
-        <span class="badge-datos">
-          <span class="dot-live"></span> Datos en vivo
-        </span>
         <button id="themeToggle" class="btn-theme" type="button">🌙 Modo oscuro</button>
         <div class="user-badge" id="userBadge">
           <span class="user-avatar" id="userAvatar">AO</span>
@@ -37,41 +35,35 @@
           </div>
         </div>
         <button id="logoutBtn" class="btn-logout" type="button" title="Cerrar sesión">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd"
-              d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z" />
-            <path fill-rule="evenodd"
-              d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
-          </svg>
+          <i class="bi bi-box-arrow-right"></i>
         </button>
       </div>
     </div>
   </nav>
 
-  <!-- Header -->
-  <header class="admin-header">
+  <!-- Banner Hero con estadísticas reales de la BD -->
+  <header class="partidos-hero">
     <div class="container-fluid px-4">
       <div class="header-top">
         <div>
           <div class="breadcrumb-nav">
-            <span class="bc-badge">Módulo de Control</span>
-            <span class="bc-separator">/</span>
-            <span class="bc-current">Panel Maestro</span>
+            <span>MÓDULO DE CONTROL</span>
           </div>
           <h1>Panel de Administración</h1>
-          <p class="header-desc">Gestión centralizada de cuentas de acceso, programación de partidos y topología de
-            filas para el Estadio Akron.</p>
+          <p class="header-desc">
+            Gestión centralizada de cuentas de acceso, programación de partidos y topología de filas.
+          </p>
         </div>
-        <div class="stats-summary" id="statsSummary">
-          <div class="stat-item">
+        <div class="hero-stats-box">
+          <div class="hero-stat-col">
             <strong id="statUsuarios">0</strong>
             <small>USUARIOS</small>
           </div>
-          <div class="stat-item">
+          <div class="hero-stat-col">
             <strong id="statPartidos">0</strong>
             <small>PARTIDOS</small>
           </div>
-          <div class="stat-item stat-accent">
+          <div class="hero-stat-col stat-green">
             <strong id="statFilas">0</strong>
             <small>FILAS CONFIG.</small>
           </div>
@@ -80,35 +72,19 @@
     </div>
   </header>
 
-  <!-- Tabs -->
+  <!-- Sub-Nav Tabs -->
   <div class="admin-tabs-wrapper">
     <div class="container-fluid px-4">
       <div class="admin-tabs">
-        <button class="tab-btn active" data-tab="usuarios">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path
-              d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-.25.02-.474.05-.683.15-1.03.735-2.072 1.886-3.037M3.5 7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
-          </svg>
-          Usuarios <span class="tab-count" id="tabUsuariosCount">0</span>
-        </button>
-        <button class="tab-btn" data-tab="partidos">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path
-              d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
-          </svg>
-          Partidos <span class="tab-count" id="tabPartidosCount">0</span>
-        </button>
-        <button class="tab-btn" data-tab="filas">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path
-              d="M14 4.5V9H2V4.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5M2 10h12v1.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5zm0 0" />
-            <path
-              d="M0 4.5A1.5 1.5 0 0 1 1.5 3h13A1.5 1.5 0 0 1 16 4.5v7a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5z" />
-          </svg>
-          Filas / Asientos
-        </button>
-        <div class="tab-status">
-          <span class="dot-sync"></span> Directorio sincronizado con base de datos
+        <div class="tab-nav-group">
+          <button class="tab-btn active active-pill" type="button" data-tab="usuarios">
+            <i class="bi bi-people-fill"></i>
+            Usuarios <span class="tab-count" id="tabUsuariosCount">0</span>
+          </button>
+          <a href="partidosAdmin.html" class="tab-btn">
+            <i class="bi bi-calendar-event"></i>
+            Partidos <span class="tab-count" id="tabPartidosCount">0 J</span>
+          </a>
         </div>
       </div>
     </div>
@@ -117,73 +93,52 @@
   <!-- Main Content -->
   <main class="container-fluid px-4 py-4">
     <!-- Tab: Usuarios -->
-    <section id="panelUsuarios">
-      <!-- Controles -->
-      <div class="controls-bar">
-        <div class="search-box">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path
-              d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-          </svg>
+    <section class="section-panel mb-4" id="panelUsuarios">
+      <!-- Sección Header -->
+      <div class="section-header">
+        <div>
+          <div class="section-title-wrap">
+            <h2>Usuarios Registrados</h2>
+            <span class="badge-partidos-oficiales" id="badgeActivos">0 registrados</span>
+          </div>
+          <p class="section-subtitle">Directorio de personal con credenciales y permisos de acceso</p>
+        </div>
+        <span class="text-muted small d-none d-md-inline" id="showingUsersText"></span>
+      </div>
+
+      <!-- Controles y Filtros -->
+      <div class="controls-filter-row mb-3">
+        <div class="search-input-group flex-grow-1">
+          <i class="bi bi-search text-muted"></i>
           <input type="text" id="searchUsers" placeholder="Buscar por nombre, usuario o email...">
         </div>
-        <select id="filterRol" class="filter-select">
+        <select id="filterRol" class="pm-select filter-select">
           <option value="">Todos los roles</option>
           <option value="admin">Admin</option>
           <option value="editor">Editor</option>
         </select>
-        <div class="controls-actions">
-          <button class="btn-action btn-add" id="btnAddUser">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-              <path
-                d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-            </svg>
-            Añadir Usuario
-          </button>
-        </div>
-      </div>
-
-      <!-- Tabla Header -->
-      <div class="table-header">
-        <div class="th-title">
-          <h3>Usuarios Registrados</h3>
-          <span class="badge-activos" id="badgeActivos">0 registrados</span>
-        </div>
+        <button class="btn-red-custom flex-shrink-0" id="btnAddUser" type="button">
+          <i class="bi bi-plus-lg"></i> Añadir Usuario
+        </button>
       </div>
 
       <!-- Tabla -->
       <div class="admin-table-wrapper">
-        <table class="admin-table">
+        <table class="admin-table align-middle">
           <thead>
             <tr>
               <th>NOMBRE COMPLETO</th>
-              <th>CORREO</th>
+              <th>USUARIO (LOGIN)</th>
               <th>ROL EN SISTEMA</th>
-              <th>ACCIONES</th>
+              <th class="text-end">ACCIONES</th>
             </tr>
           </thead>
           <tbody id="usersTableBody">
             <tr>
-              <td colspan="4" class="text-center py-4">Cargando usuarios...</td>
+              <td colspan="4" class="text-center py-4 text-muted">Cargando usuarios...</td>
             </tr>
           </tbody>
         </table>
-      </div>
-    </section>
-
-    <!-- Tab: Partidos (placeholder) -->
-    <section id="panelPartidos" class="d-none">
-      <div class="placeholder-panel">
-        <h3>Gestión de Partidos</h3>
-        <p>Aquí se podrán administrar los partidos del torneo.</p>
-      </div>
-    </section>
-
-    <!-- Tab: Filas (placeholder) -->
-    <section id="panelFilas" class="d-none">
-      <div class="placeholder-panel">
-        <h3>Gestión de Filas y Asientos</h3>
-        <p>Aquí se podrá administrar la topología de filas y asientos del estadio.</p>
       </div>
     </section>
   </main>
@@ -196,10 +151,7 @@
         <div class="personal-modal-header">
           <div class="pm-header-left">
             <div class="pm-header-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5"/>
-              </svg>
+              <i class="bi bi-person-plus-fill"></i>
             </div>
             <div class="pm-header-text">
               <div class="pm-header-title-row">
@@ -210,9 +162,7 @@
             </div>
           </div>
           <button type="button" class="pm-close-btn" data-bs-dismiss="modal" aria-label="Cerrar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
-            </svg>
+            <i class="bi bi-x-lg"></i>
           </button>
         </div>
 
@@ -226,7 +176,7 @@
                 <label class="pm-label" for="inputNombre">NOMBRE COMPLETO <span class="pm-req">*</span></label>
                 <div class="pm-input-wrapper">
                   <span class="pm-input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/></svg>
+                    <i class="bi bi-person"></i>
                   </span>
                   <input type="text" class="pm-input" id="inputNombre" placeholder="Ej. Juan Pablo Ramírez" required>
                 </div>
@@ -237,7 +187,7 @@
                 <label class="pm-label" for="inputCorreo">CORREO ELECTRÓNICO <span class="pm-req">*</span></label>
                 <div class="pm-input-wrapper">
                   <span class="pm-input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/></svg>
+                    <i class="bi bi-envelope"></i>
                   </span>
                   <input type="email" class="pm-input" id="inputCorreo" placeholder="ejemplo@rebanotours.mx" required>
                 </div>
@@ -252,7 +202,7 @@
                     <option value="admin">Administrador</option>
                   </select>
                   <span class="pm-select-arrow">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>
+                    <i class="bi bi-chevron-down"></i>
                   </span>
                 </div>
               </div>
@@ -262,11 +212,11 @@
                 <label class="pm-label" for="inputPassword">CONTRASEÑA DE ACCESO <span class="pm-req">*</span></label>
                 <div class="pm-input-wrapper">
                   <span class="pm-input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"/></svg>
+                    <i class="bi bi-lock"></i>
                   </span>
                   <input type="password" class="pm-input" id="inputPassword" placeholder="••••••••••">
                   <button type="button" class="pm-toggle-password" id="togglePasswordBtn" title="Mostrar contraseña">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/></svg>
+                    <i class="bi bi-eye"></i>
                   </button>
                 </div>
                 <small class="pm-hint" id="passwordHelp">Mínimo 6 caracteres</small>
@@ -279,7 +229,7 @@
         <div class="modal-footer personal-modal-footer">
           <button type="button" class="pm-btn-cancel" data-bs-dismiss="modal">Cancelar</button>
           <button type="button" class="pm-btn-save" id="saveUserBtn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/></svg>
+            <i class="bi bi-check-lg"></i>
             Guardar Personal
           </button>
         </div>
@@ -292,7 +242,6 @@
     <div class="container-fluid px-4">
       <div class="footer-content">
         <span><strong>Rebaño Tours Ags.</strong> • Plataforma Oficial de Boletaje & Bonos</span>
-        <span>Versión 2.4.0-prod</span>
       </div>
     </div>
   </footer>

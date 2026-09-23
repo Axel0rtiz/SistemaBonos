@@ -17,7 +17,7 @@ const statusOptions = { available: 'Disponible', reserved: 'Apartado', sold: 'Ve
 const allowedTransitions = {
   available: ['reserved', 'sold'],
   reserved: ['available', 'sold'],
-  sold: []
+  sold: ['available', 'reserved']
 };
 let seats = [];
 let activeGameId = null;
@@ -56,13 +56,28 @@ async function apiRequest(url, options = {}) {
   return data;
 }
 
+let _initialLoadDone = false;
+
 async function loadSeats() {
   try {
     seats = await apiRequest('/api/asientos');
-    const urlParams = new URLSearchParams(window.location.search);
-    const paramPartido = Number(urlParams.get('partido'));
-    const partidoExiste = paramPartido && seats.some(s => s.gameId === paramPartido);
-    activeGameId = partidoExiste ? paramPartido : (activeGameId || seats[0]?.gameId);
+
+    // Solo usar el parámetro de URL ?partido=X en la carga inicial
+    if (!_initialLoadDone) {
+      _initialLoadDone = true;
+      const urlParams = new URLSearchParams(window.location.search);
+      const paramPartido = Number(urlParams.get('partido'));
+      const partidoExiste = paramPartido && seats.some(s => s.gameId === paramPartido);
+      if (partidoExiste) {
+        activeGameId = paramPartido;
+      }
+    }
+
+    // Si aún no hay activeGameId, usar el primer partido disponible
+    if (!activeGameId) {
+      activeGameId = seats[0]?.gameId;
+    }
+
     renderTabs();
     renderContent();
     applyFilters();
@@ -75,8 +90,20 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
 }
 
+function getJornadaNum(val) {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  const match = String(val).match(/\d+/);
+  return match ? parseInt(match[0], 10) : 0;
+}
+
 function games() {
-  return [...new Map(seats.map(seat => [seat.gameId, seat])).values()];
+  const map = new Map(seats.map(seat => [seat.gameId, seat]));
+  return [...map.values()].sort((a, b) => {
+    const jA = getJornadaNum(a.label || a.gameId);
+    const jB = getJornadaNum(b.label || b.gameId);
+    return jA - jB;
+  });
 }
 
 function formatDate(value) {
@@ -151,12 +178,20 @@ function hideAuditPopover() {
 }
 
 function renderTabs() {
-  tabs.innerHTML = games().map(game => `
+  const allGames = games();
+  tabs.innerHTML = allGames.map(game => `
     <li class="nav-item" role="presentation">
       <button class="nav-link ${game.gameId === activeGameId ? 'active' : ''}" data-game-tab="${game.gameId}" type="button" role="tab">${escapeHtml(game.label)}</button>
     </li>
   `).join('');
-  gamesTotal.textContent = games().length;
+  gamesTotal.textContent = allGames.length;
+
+  const activeGame = allGames.find(g => g.gameId === activeGameId) || allGames[0];
+  const livePill = document.querySelector('.live-pill');
+  if (livePill && activeGame) {
+    const torneoTxt = (activeGame.torneo || 'Datos en vivo').toUpperCase();
+    livePill.innerHTML = `<span class="live-dot"></span>${escapeHtml(torneoTxt)}`;
+  }
 }
 
 function renderSeat(seat) {
@@ -186,7 +221,11 @@ function renderContent() {
     return `<section class="tab-pane ${game.gameId === activeGameId ? 'show active' : 'd-none'}" data-game-content="${game.gameId}">
       <div class="game-card shadow-sm mb-4">
         <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-3">
-          <div><h2 class="h4 fw-bold mb-1">${escapeHtml(game.label)} ${escapeHtml(game.title)}</h2><p class="text-muted mb-0">${formatDate(game.fecha)}</p></div>
+          <div>
+            ${game.torneo ? `<span class="badge text-bg-danger me-2 mb-1" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">${escapeHtml(game.torneo)}</span>` : ''}
+            <h2 class="h4 fw-bold mb-1">${escapeHtml(game.label)} ${escapeHtml(game.title)}</h2>
+            <p class="text-muted mb-0">${formatDate(game.fecha)}</p>
+          </div>
           <div class="d-flex flex-wrap gap-3 align-items-center small">${Object.entries(statusOptions).map(([status, label]) => `<span><i class="legend-dot dot-${status}"></i>${label}</span>`).join('')}</div>
         </div>
         ${statsHtml(gameSeats)}
@@ -305,6 +344,18 @@ function initUser() {
       userName.textContent = displayName;
       if (userAvatar) userAvatar.textContent = userInitials(displayName);
       document.querySelector('#userGreeting').classList.replace('d-none', 'd-inline-flex');
+    }
+
+    const token = getToken();
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload && payload.rol === 'admin') {
+        const adminBackBtn = document.querySelector('#adminBackBtn');
+        if (adminBackBtn) {
+          adminBackBtn.classList.remove('d-none');
+          adminBackBtn.classList.add('d-inline-flex');
+        }
+      }
     }
   } catch (error) { console.warn('No se pudo cargar información del usuario:', error); }
 }

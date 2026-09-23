@@ -9,7 +9,7 @@ const ESTADOS_FRONT = { disponible: 'available', apartado: 'reserved', vendido: 
 const TRANSICIONES_PERMITIDAS = {
   disponible: ['apartado', 'vendido'],
   apartado: ['disponible', 'vendido'],
-  vendido: []
+  vendido: ['disponible', 'apartado']
 };
 
 //Función para obtener la lista de todos los asientos y el ultimo cambio que se tiene
@@ -23,6 +23,7 @@ const listarAsientos = async (req, res) => {
         CONCAT('J', p.jornada) AS label,
         p.nombre_partido AS title,
         p.fecha,
+        COALESCE(t.nombre_torneo, '') AS torneo,
         CONCAT(REPLACE(f.nombre_fila, '/ Fila ', '/'), '/', a.numero_asiento) AS seat,
         LOWER(z.nombre_zona) AS zone,
         CASE app.estado WHEN 'disponible' THEN 'available' WHEN 'apartado' THEN 'reserved' WHEN 'vendido' THEN 'sold' END AS status,
@@ -31,6 +32,7 @@ const listarAsientos = async (req, res) => {
         h.fecha_cambio AS lastChangedAt
       FROM Asientos_Por_Partido app
       INNER JOIN Partidos p ON p.id_partido = app.id_partido
+      LEFT JOIN Torneos t ON t.id_torneo = p.id_torneo
       INNER JOIN Asientos a ON a.id_asiento = app.id_asiento
       INNER JOIN Filas f ON f.id_fila = a.id_fila
       INNER JOIN Zonas z ON z.id_zona = f.id_zona
@@ -42,7 +44,7 @@ const listarAsientos = async (req, res) => {
         LIMIT 1
       )
       LEFT JOIN Usuarios u ON u.id_usuario = h.id_usuario
-      ORDER BY p.fecha, app.id_asiento_partido
+      ORDER BY CAST(p.jornada AS UNSIGNED) ASC, p.fecha ASC, app.id_asiento_partido ASC
     `);
     res.json(rows);
   } catch (error) {
@@ -91,9 +93,7 @@ const actualizarEstado = async (req, res) => {
       await connection.rollback();
       //Manejo de errores en la transicion de estados
       return res.status(409).json({
-        message: estadoAnterior === 'vendido'
-          ? 'Un asiento vendido no puede cambiar de estado'
-          : 'La transición de estado solicitada no está permitida'
+        message: 'La transición de estado solicitada no está permitida'
       });
     }
 

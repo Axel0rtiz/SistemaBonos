@@ -1,5 +1,9 @@
 // Proteger ruta: solo administradores
 (function checkAdminAuth() {
+  // El modulo se conserva, pero permanece deshabilitado temporalmente.
+  window.location.replace('admin.html');
+  return;
+
   //Verifica que el usuario tenga un token de sesión
   const token = localStorage.getItem('bonos-token') || sessionStorage.getItem('bonos-token');
   //Si no hay token, redirige a login
@@ -263,14 +267,14 @@ function updateSectorHeader() {
   const totalSeats = allAsientos.length;
 
   document.querySelector('#sectorHeading').textContent = `Zona ${zonaNombre}`;
-  document.querySelector('#sectorBlockLabel').textContent = selectedZonaId === 1 ? '• Bloque Oriente Preferente' : '• Bloque Cabecera / Preferente';
+  document.querySelector('#sectorBlockLabel').textContent = selectedZonaId === 1 ? '• Bloque Superior' : '• Bloque Inferior';
 
   if (totalSeats > 0) {
     const minNum = Math.min(...allAsientos.map(a => Number(a.numero_asiento)));
     const maxNum = Math.max(...allAsientos.map(a => Number(a.numero_asiento)));
 
     if (selectedFilaId === 'todas') {
-      document.querySelector('#summaryPillText').textContent = `🏛️ Todas las filas / ${totalSeats} Asientos Totales`;
+      document.querySelector('#summaryPillText').textContent = `Todas las filas / ${totalSeats} Asientos Totales`;
       document.querySelector('#gridTitleText').textContent = `CUADRÍCULA DE ASIENTOS REGISTRADOS EN ZONA ${zonaNombre.toUpperCase()} (${totalSeats} LUGARES)`;
     } else {
       document.querySelector('#summaryPillText').textContent = `${tribuna.split('-')[0] || 'T2'} / F. ${filaLetter} / L. ${minNum} - L. ${maxNum} (${totalSeats} Asientos)`;
@@ -341,7 +345,6 @@ function renderSeatsGrid() {
         <div class="seat-row-subtext">${escapeHtml(tribuna)} • Fila ${filaLetter}</div>
         <div class="seat-bottom-row">
           <span class="seat-state-label">Lugar #${realNumber}</span>
-          <span class="seat-gear-icon" title="Editar o reasignar">⚙️</span>
         </div>
       </div>
     `;
@@ -372,7 +375,6 @@ function renderSeatsGrid() {
         <div class="row-group-block">
           <div class="row-group-header">
             <div class="row-group-title">
-              <span class="text-danger">📌</span>
               <span>Tribuna ${escapeHtml(tribuna)} • <strong>Fila ${escapeHtml(filaLetter)}</strong> (${escapeHtml(filaName)})</span>
             </div>
             <span class="row-group-badge">${groupSeats.length} lugares</span>

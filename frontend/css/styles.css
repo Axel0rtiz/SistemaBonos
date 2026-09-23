@@ -89,12 +89,23 @@ body {
   background: rgba(255, 255, 255, .08);
   cursor: pointer;
   transition: background .2s ease, transform .2s ease;
+  text-decoration: none;
 }
 
 .topbar-button:hover {
   background: rgba(255, 255, 255, .18);
   color: #fff;
   transform: translateY(-1px);
+}
+
+.admin-back-btn {
+  background: rgba(255, 255, 255, .15);
+  border-color: rgba(255, 255, 255, .4);
+}
+
+.admin-back-btn:hover {
+  background: rgba(255, 255, 255, .28);
+  color: #fff;
 }
 
 .logout-button {
@@ -382,8 +393,18 @@ body {
 .audit-current-status.sold { color: #fb7185; }
 
 .audit-divider { height: 1px; margin: .85rem 0 1rem; background: #454752; }
-.audit-quick-label { margin-bottom: .65rem; color: #aeb0bc; font-size: .75rem; font-weight: 800; letter-spacing: .04rem; }
 .audit-quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; }
+
+.audit-no-actions {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0;
+  padding: .25rem 0;
+  color: #a1a1aa;
+  font-size: .82rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
 
 .audit-quick-btn {
   min-height: 2.25rem;

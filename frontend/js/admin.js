@@ -69,6 +69,8 @@ async function loadStats() {
     document.querySelector('#statFilas').textContent = stats.filas;
     document.querySelector('#tabUsuariosCount').textContent = stats.usuarios;
     document.querySelector('#tabPartidosCount').textContent = stats.partidos + ' J';
+    const tabFilas = document.querySelector('#tabFilasCount');
+    if (tabFilas) tabFilas.textContent = `${stats.filas ?? 0} F`;
   } catch (error) {
     console.error('Error al cargar estadísticas:', error);
   }
@@ -99,37 +101,52 @@ function renderUsers() {
     return matchesSearch && matchesRol;
   });
 
+  const showingText = document.querySelector('#showingUsersText');
+  if (showingText) showingText.textContent = `Mostrando ${filtered.length} de ${allUsers.length} usuarios`;
+
   if (filtered.length === 0) {
-    usersTableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4">No se encontraron usuarios</td></tr>';
+    usersTableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No se encontraron usuarios</td></tr>';
     return;
   }
 
   //Renderiza la tabla de usuarios
-  usersTableBody.innerHTML = filtered.map(user => `
-    <tr>
-      <td>
-        <div class="user-cell">
-          <span class="user-cell-avatar">${escapeHtml(initials(user.nombre))}</span>
-          <div class="user-cell-info">
-            <strong>${escapeHtml(user.nombre)}</strong>
-            <small>${escapeHtml(user.correo)}</small>
+  usersTableBody.innerHTML = filtered.map((user, idx) => {
+    const handle = `@${user.correo.split('@')[0]}`;
+    const isSuperAdmin = user.rol === 'admin';
+    const roleClass = isSuperAdmin ? 'role-super-admin' : 'role-editor-bonos';
+    const roleLabel = isSuperAdmin ? 'Super Admin' : 'Editor / Bonos';
+    const colorClass = `avatar-color-${(idx % 4) + 1}`;
+
+    return `
+      <tr>
+        <td>
+          <div class="user-cell">
+            <span class="user-cell-avatar ${colorClass}">${escapeHtml(initials(user.nombre))}</span>
+            <div class="user-cell-info">
+              <strong>${escapeHtml(user.nombre)}</strong>
+              <small>${escapeHtml(user.correo)}</small>
+            </div>
           </div>
-        </div>
-      </td>
-      <td>${escapeHtml(user.correo)}</td>
-      <td><span class="role-badge role-${escapeHtml(user.rol)}">${user.rol === 'admin' ? 'Super Admin' : 'Editor / Bonos'}</span></td>
-      <td>
-        <div class="action-btns">
-          <button class="action-btn" title="Editar" data-edit="${user.id}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293z"/></svg>
-          </button>
-          <button class="action-btn delete" title="Eliminar" data-delete="${user.id}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H5.5l1-1h3l1 1H14a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4z"/></svg>
-          </button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+        </td>
+        <td>
+          <span class="user-login-badge">${escapeHtml(handle)}</span>
+        </td>
+        <td>
+          <span class="user-role-badge ${roleClass}">${roleLabel}</span>
+        </td>
+        <td class="text-end">
+          <div class="table-actions-group">
+            <button class="action-icon-btn" title="Editar" data-edit="${user.id}">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="action-icon-btn text-danger" title="Eliminar" data-delete="${user.id}">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
 //Abrir modal para agregar usuario
@@ -200,7 +217,7 @@ async function saveUser() {
     alert(error.message);
   } finally {
     saveUserBtn.disabled = false;
-    saveUserBtn.textContent = 'Guardar';
+    saveUserBtn.textContent = 'Guardar Personal';
   }
 }
 
@@ -237,9 +254,6 @@ function switchTab(tabName) {
   }
   //Se cambia al tab seleccionado
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
-  document.querySelector('#panelUsuarios').classList.toggle('d-none', tabName !== 'usuarios');
-  document.querySelector('#panelPartidos').classList.toggle('d-none', tabName !== 'partidos');
-  document.querySelector('#panelFilas').classList.toggle('d-none', tabName !== 'filas');
 }
 
 //Eventos
@@ -270,10 +284,10 @@ function bindEvents() {
   //Editar y eliminar en la tabla
   usersTableBody.addEventListener('click', event => {
     const editBtn = event.target.closest('[data-edit]');
-    if (editBtn) openEditModal(Number(editBtn.dataset.edit));
+    if (editBtn) { openEditModal(Number(editBtn.dataset.edit)); return; }
 
     const deleteBtn = event.target.closest('[data-delete]');
-    if (deleteBtn) deleteUser(Number(deleteBtn.dataset.delete));
+    if (deleteBtn) { deleteUser(Number(deleteBtn.dataset.delete)); return; }
   });
 
   //Tema claro/oscuro

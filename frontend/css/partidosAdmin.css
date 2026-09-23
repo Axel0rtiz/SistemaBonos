@@ -1338,3 +1338,234 @@
   display: flex;
 }
 
+/* ESTILOS DEL MODAL DETALLE DEL PARTIDO*/
+.info-modal-wrapper {
+  color: var(--text-primary);
+}
+
+.info-badge-jornada {
+  background: #c51d2a;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.8rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 0.5rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.info-badge-torneo {
+  background: #334155;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 0.45rem 1rem;
+  border-radius: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dot-live-pink {
+  color: #f43f5e;
+  font-size: 0.85rem;
+}
+
+.info-match-title {
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.info-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.info-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.info-meta-icon {
+  font-size: 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tarjetas de estadísticas (Disponibles, Apartados, Vendidos) */
+.info-stat-card {
+  padding: 1.25rem 0.85rem;
+  border-radius: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.info-stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.info-stat-card .stat-number {
+  font-size: 2.4rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 0.35rem;
+}
+
+.info-stat-card .stat-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Colores específicos de la tarjeta */
+.stat-card-disp {
+  background: #e6f7f0;
+  border: 1.5px solid #a7f3d0;
+}
+
+[data-bs-theme="dark"] .stat-card-disp {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.text-disp {
+  color: #059669;
+}
+
+[data-bs-theme="dark"] .text-disp {
+  color: #34d399;
+}
+
+.stat-card-apart {
+  background: #fefce8;
+  border: 1.5px solid #fde68a;
+}
+
+[data-bs-theme="dark"] .stat-card-apart {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.text-apart {
+  color: #d97706;
+}
+
+[data-bs-theme="dark"] .text-apart {
+  color: #fbbf24;
+}
+
+.stat-card-vend {
+  background: #fef2f2;
+  border: 1.5px solid #fca5a5;
+}
+
+[data-bs-theme="dark"] .stat-card-vend {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.text-vend {
+  color: #dc2626;
+}
+
+[data-bs-theme="dark"] .text-vend {
+  color: #f87171;
+}
+
+/* Sección Ocupación de Asientos */
+.info-occupancy-section {
+  margin-top: 1.25rem;
+}
+
+.info-occupancy-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.info-occupancy-value {
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.info-progress-container {
+  width: 100%;
+  background: var(--soft-bg);
+  border-radius: 999px;
+  overflow: hidden;
+  padding: 2px;
+}
+
+.info-progress-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.info-progress-bar .segment-vend {
+  background: #ff4d6d;
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.info-progress-bar .segment-apart {
+  background: #ffb703;
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.info-progress-bar .segment-disp {
+  background: #10b981;
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.info-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.info-legend-row .legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dot-legend {
+  font-size: 0.75rem;
+}
+
+.dot-legend.dot-vend {
+  color: #ff4d6d;
+}
+
+.dot-legend.dot-apart {
+  color: #ffb703;
+}
+
+.dot-legend.dot-disp {
+  color: #10b981;
+}
+

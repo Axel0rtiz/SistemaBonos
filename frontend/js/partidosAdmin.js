@@ -264,12 +264,24 @@ function updateTournamentTitle(name) {
   if (navBadge) navBadge.textContent = name.toUpperCase();
 }
 
-// Construir dinámicamente las píldoras de jornada según los partidos de la BD
+// Helper para extraer de forma robusta el número de jornada (ej. "J1", 1, "Jornada 10" -> 10)
+function getJornadaNum(val) {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  const match = String(val).match(/\d+/);
+  return match ? parseInt(match[0], 10) : 0;
+}
+
+// Construir dinámicamente las píldoras de jornada según los partidos de la BD (ordenadas ascendentemente)
 function buildJornadasPills() {
   const bar = document.querySelector('#jornadasNavBar');
   if (!bar) return;
 
-  const jornadas = [...new Set(allPartidos.map(p => Number(p.jornada)).filter(Boolean))].sort((a, b) => a - b);
+  const partidosTorneo = selectedTorneoId
+    ? allPartidos.filter(p => Number(p.id_torneo) === Number(selectedTorneoId))
+    : allPartidos;
+
+  const jornadas = [...new Set(partidosTorneo.map(p => getJornadaNum(p.jornada)).filter(n => n > 0))].sort((a, b) => a - b);
 
   let pillsHtml = `
     <span class="jornadas-label">JORNADAS:</span>
@@ -298,7 +310,7 @@ function renderPartidos() {
     }
 
     if (activeJornadaFilter !== 'todas') {
-      if (String(p.jornada) !== String(activeJornadaFilter)) return false;
+      if (getJornadaNum(p.jornada) !== getJornadaNum(activeJornadaFilter)) return false;
     }
 
     if (searchQuery) {
@@ -310,6 +322,9 @@ function renderPartidos() {
 
     return true;
   });
+
+  // Ordenar ascendentemente por número de jornada
+  filtered.sort((a, b) => getJornadaNum(a.jornada) - getJornadaNum(b.jornada));
 
   const totalFiltered = filtered.length;
   document.querySelector('#totalPartidosCount').textContent = totalFiltered;
@@ -389,17 +404,17 @@ function renderPartidos() {
         <!-- Derecha: Acciones directas a la BD -->
         <div class="partido-actions">
           <button class="btn-info-action ${isFirst ? 'btn-info-red' : ''}" data-action="info" data-id="${p.id}" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/></svg>
+            <i class="bi bi-info-circle-fill"></i>
             Info
           </button>
           <button class="btn-icon-square" data-action="view-seats" data-id="${p.id}" title="Ver topología de asientos de este partido" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5z"/></svg>
+            <i class="bi bi-grid-3x3-gap-fill"></i>
           </button>
           <button class="btn-icon-square" data-action="edit" data-id="${p.id}" title="Editar partido" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293z"/></svg>
+            <i class="bi bi-pencil-fill"></i>
           </button>
           <button class="btn-icon-square text-danger" data-action="delete" data-id="${p.id}" title="Eliminar partido de la base de datos" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H5.5l1-1h3l1 1H14a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4z"/></svg>
+            <i class="bi bi-trash-fill"></i>
           </button>
         </div>
       </div>
@@ -583,7 +598,7 @@ function bindEvents() {
   }
 }
 
-// Modal de Info de Partido con datos de la BD
+// Modal de Info de Partido con datos de la BD (Diseño de la maqueta)
 function openInfoModal(id) {
   const partido = allPartidos.find(p => p.id === id);
   if (!partido) return;
@@ -592,52 +607,87 @@ function openInfoModal(id) {
   const apart = Number(partido.apartados) || 0;
   const vend = Number(partido.vendidos) || 0;
   const total = Number(partido.total_asientos) || (disp + apart + vend) || 36;
+  const ocupados = vend + apart;
 
-  const pctVendido = Math.round((vend / total) * 100);
-  const pctApartado = Math.round((apart / total) * 100);
-  const pctDisponible = Math.round((disp / total) * 100);
+  const pctOcupado = total > 0 ? Math.round((ocupados / total) * 100) : 0;
+  const pctVendido = total > 0 ? Math.round((vend / total) * 100) : 0;
+  const pctApartado = total > 0 ? Math.round((apart / total) * 100) : 0;
+  const pctDisponible = total > 0 ? Math.max(0, 100 - pctVendido - pctApartado) : 0;
+
+  const formattedDate = formatMatchDate(partido.fecha);
 
   const modalBody = document.querySelector('#infoModalBody');
   modalBody.innerHTML = `
-    <div class="p-2">
-      <div class="d-flex align-items-center justify-content-between mb-3">
-        <div>
-          <span class="badge bg-danger text-uppercase mb-1">Jornada ${partido.jornada}</span>
-          <h4 class="fw-bold mb-0">${escapeHtml(partido.nombre_partido)}</h4>
-        </div>
-        <span class="badge bg-secondary">${escapeHtml(partido.nombre_torneo || 'Torneo')}</span>
+    <div class="info-modal-wrapper px-1 py-1">
+      <!-- 1. Badges superiores: Jornada y Torneo -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="info-badge-jornada">JORNADA ${partido.jornada}</span>
+        <span class="info-badge-torneo">
+          <span class="dot-live-pink">●</span> ${escapeHtml(partido.nombre_torneo || 'Apertura 2026')}
+        </span>
       </div>
 
-      <p class="text-muted small mb-3">
-        <strong>📅 Fecha en BD:</strong> ${escapeHtml(formatMatchDate(partido.fecha))}<br>
-        <strong>📍 Sede:</strong> Estadio Akron • Zapopan<br>
-        <strong>🎟️ Capacidad Asignada:</strong> ${total} Asientos
-      </p>
+      <!-- 2. Nombre del Encuentro -->
+      <h2 class="info-match-title">${escapeHtml(partido.nombre_partido)}</h2>
 
-      <div class="row g-2 text-center mb-3">
-        <div class="col-4 p-2 rounded" style="background: rgba(34, 197, 94, 0.1);">
-          <strong class="d-block text-success fs-5">${disp}</strong>
-          <small class="text-muted">DISPONIBLES</small>
+      <!-- 3. Lista de Metadatos (Fecha BD, Sede, Capacidad) -->
+      <div class="info-meta-list mb-4">
+        <div class="info-meta-item">
+          <span class="info-meta-icon">🗓️</span>
+          <span><strong>Fecha en BD:</strong> ${escapeHtml(formattedDate)}</span>
         </div>
-        <div class="col-4 p-2 rounded" style="background: rgba(217, 119, 6, 0.1);">
-          <strong class="d-block text-warning fs-5">${apart}</strong>
-          <small class="text-muted">APARTADOS</small>
+        <div class="info-meta-item">
+          <span class="info-meta-icon">📍</span>
+          <span><strong>Sede:</strong> Estadio Akron • Zapopan</span>
         </div>
-        <div class="col-4 p-2 rounded" style="background: rgba(220, 38, 38, 0.1);">
-          <strong class="d-block text-danger fs-5">${vend}</strong>
-          <small class="text-muted">VENDIDOS</small>
+        <div class="info-meta-item">
+          <span class="info-meta-icon">🎟️</span>
+          <span><strong>Capacidad Asignada:</strong> ${total} Asientos</span>
         </div>
       </div>
 
-      <div class="mb-2">
-        <div class="d-flex justify-content-between small text-muted mb-1">
-          <span>Ocupación de Asientos</span>
-          <span>${pctVendido + pctApartado}% Ocupado</span>
+      <!-- 4. Tres Tarjetas de Estadísticas (Disponibles, Apartados, Vendidos) -->
+      <div class="row g-3 mb-4 text-center">
+        <div class="col-4">
+          <div class="info-stat-card stat-card-disp">
+            <div class="stat-number text-disp">${disp}</div>
+            <div class="stat-label text-disp">DISPONIBLES</div>
+          </div>
         </div>
-        <div class="progress" style="height: 8px;">
-          <div class="progress-bar bg-danger" style="width: ${pctVendido}%" title="Vendidos"></div>
-          <div class="progress-bar bg-warning" style="width: ${pctApartado}%" title="Apartados"></div>
-          <div class="progress-bar bg-success" style="width: ${pctDisponible}%" title="Disponibles"></div>
+        <div class="col-4">
+          <div class="info-stat-card stat-card-apart">
+            <div class="stat-number text-apart">${apart}</div>
+            <div class="stat-label text-apart">APARTADOS</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="info-stat-card stat-card-vend">
+            <div class="stat-number text-vend">${vend}</div>
+            <div class="stat-label text-vend">VENDIDOS</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Barra de Ocupación de Asientos y Leyenda -->
+      <div class="info-occupancy-section">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="info-occupancy-title">Ocupación de Asientos</span>
+          <span class="info-occupancy-value">
+            <strong>${pctOcupado}% Ocupado</strong> <small class="text-muted">(${ocupados}/${total})</small>
+          </span>
+        </div>
+        <div class="info-progress-container">
+          <div class="info-progress-bar">
+            <div class="segment-vend" style="width: ${pctVendido}%" title="${vend} Vendidos (${pctVendido}%)"></div>
+            <div class="segment-apart" style="width: ${pctApartado}%" title="${apart} Apartados (${pctApartado}%)"></div>
+            <div class="segment-disp" style="width: ${pctDisponible}%" title="${disp} Disponibles (${pctDisponible}%)"></div>
+          </div>
+        </div>
+
+        <div class="info-legend-row mt-3">
+          <div class="legend-item"><span class="dot-legend dot-vend">●</span> ${vend} Vendidos (${pctVendido}%)</div>
+          <div class="legend-item"><span class="dot-legend dot-apart">●</span> ${apart} Apartados (${pctApartado}%)</div>
+          <div class="legend-item"><span class="dot-legend dot-disp">●</span> ${disp} Disponibles (${pctDisponible}%)</div>
         </div>
       </div>
     </div>
