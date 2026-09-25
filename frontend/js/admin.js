@@ -10,7 +10,7 @@
     if (payload.exp && Date.now() >= payload.exp * 1000) { logout(); return; }
     //Si el rol no es admin, redirigir a index
     if (payload.rol !== 'admin') { window.location.href = 'index.html'; return; }
-  } catch (e) { logout(); }
+  } catch (e) { logout(); } 
 })();
 
 //DOM

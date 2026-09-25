@@ -28,7 +28,7 @@ app.use('/api/admin', adminRoutes);
 app.get('/api/estado', (req, res) => {
     res.json({ mensaje: 'El backend está conectado y listo para recibir peticiones' });
 });
-
+ 
 // Iniciar el servidor
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
