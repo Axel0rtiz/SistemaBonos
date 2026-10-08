@@ -169,7 +169,7 @@ const actualizarEstadoAsiento = async (req, res) => {
     }
 
     const [[partido]] = await db.execute(
-      'SELECT DATE(fecha) < CURDATE() AS partido_pasado FROM Partidos WHERE id_partido = ?',
+      'SELECT CASE WHEN DATE(fecha) < CURDATE() THEN 1 ELSE 0 END AS partido_pasado FROM Partidos WHERE id_partido = ?',
       [Number(partidoId)]
     );
     if (!partido) {

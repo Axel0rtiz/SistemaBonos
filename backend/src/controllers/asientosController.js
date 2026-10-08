@@ -21,10 +21,10 @@ const listarAsientos = async (req, res) => {
         app.id_asiento_partido AS id,
         app.id_partido AS gameId,
         p.id_torneo AS tournamentId,
-        CONCAT('J', p.jornada) AS label,
+        CONCAT('J', CAST(p.jornada AS CHAR)) AS label,
         p.nombre_partido AS title,
         p.fecha,
-        DATE(p.fecha) < CURDATE() AS gameDatePassed,
+        CASE WHEN DATE(p.fecha) < CURDATE() THEN 1 ELSE 0 END AS gameDatePassed,
         COALESCE(t.nombre_torneo, '') AS torneo,
         t.fecha_inicio AS tournamentStart,
         CONCAT(REPLACE(f.nombre_fila, '/ Fila ', '/'), '/', a.numero_asiento) AS seat,
@@ -39,19 +39,19 @@ const listarAsientos = async (req, res) => {
       INNER JOIN Asientos a ON a.id_asiento = app.id_asiento
       INNER JOIN Filas f ON f.id_fila = a.id_fila
       INNER JOIN Zonas z ON z.id_zona = f.id_zona
-      LEFT JOIN Historial_Cambios h ON h.id_historial = (
-        SELECT h2.id_historial
-        FROM Historial_Cambios h2
-        WHERE h2.id_asiento_partido = app.id_asiento_partido
-        ORDER BY h2.fecha_cambio DESC, h2.id_historial DESC
-        LIMIT 1
-      )
+      LEFT JOIN (
+        SELECT id_asiento_partido, MAX(id_historial) AS max_historial
+        FROM Historial_Cambios
+        GROUP BY id_asiento_partido
+      ) lh ON lh.id_asiento_partido = app.id_asiento_partido
+      LEFT JOIN Historial_Cambios h ON h.id_historial = lh.max_historial
       LEFT JOIN Usuarios u ON u.id_usuario = h.id_usuario
-      ORDER BY CAST(p.jornada AS UNSIGNED) ASC, p.fecha ASC, app.id_asiento_partido ASC
+      ORDER BY (p.jornada + 0) ASC, p.fecha ASC, app.id_asiento_partido ASC
     `);
     res.json(rows);
   } catch (error) {
     console.error('Error al listar asientos:', error.message);
+    console.error('Detalles:', error);
     res.status(500).json({ message: 'No se pudieron cargar los asientos' });
   }
 };
@@ -73,7 +73,7 @@ const actualizarEstado = async (req, res) => {
 
     //Consultar estado actual del asiento
     const [asientos] = await connection.execute(
-      `SELECT app.estado, DATE(p.fecha) < CURDATE() AS partido_pasado
+      `SELECT app.estado, CASE WHEN DATE(p.fecha) < CURDATE() THEN 1 ELSE 0 END AS partido_pasado
        FROM Asientos_Por_Partido app
        INNER JOIN Partidos p ON p.id_partido = app.id_partido
        WHERE app.id_asiento_partido = ?
