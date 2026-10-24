@@ -341,9 +341,143 @@ body {
 .seat-btn.sold .seat-status-dot { background: #ef4444; }
 
 .seat-item {
+  position: relative;
   width: 96px;
   min-width: 96px;
   flex: 0 0 96px;
+}
+
+.seat-item.seat-selected {
+  animation: seat-selection-vibration .28s ease-in-out infinite alternate;
+}
+
+@keyframes seat-selection-vibration {
+  from {
+    transform: translateX(-1px) rotate(-.7deg);
+  }
+
+  to {
+    transform: translateX(1px) rotate(.7deg);
+  }
+}
+
+.seat-select-label {
+  position: absolute;
+  z-index: 1;
+  top: .2rem;
+  right: .2rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.seat-select-checkbox {
+  width: .9rem;
+  height: .9rem;
+  accent-color: var(--brand-red);
+}
+
+.bulk-actions-bar {
+  position: fixed;
+  z-index: 1040;
+  top: 50%;
+  right: 3rem;
+  bottom: auto;
+  left: auto;
+  width: min(240px, calc(100vw - 3rem));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  padding: 1rem;
+  border: 1px solid #dbe2ea;
+  border-radius: .85rem;
+  background: var(--card-bg);
+  box-shadow: 0 .5rem 1.5rem rgba(15, 23, 42, .12);
+  color: var(--bs-body-color);
+  transform: translateY(-50%);
+}
+
+.bulk-actions-badge {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid rgba(215, 25, 32, .2);
+  border-radius: 50%;
+  background: #fff3f3;
+  color: var(--brand-red);
+  font-weight: 800;
+}
+
+.bulk-actions-bar .bulk-actions-count {
+  font-size: .95rem;
+}
+
+.bulk-actions-seats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .35rem;
+  max-height: 4rem;
+  overflow-y: auto;
+}
+
+.bulk-seat-chip {
+  padding: .2rem .45rem;
+  border: 1px solid #dbe2ea;
+  border-radius: .3rem;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: .72rem;
+  font-weight: 600;
+}
+
+.bulk-actions-bar .btn {
+  width: 100%;
+}
+
+.bulk-selection-button,
+.bulk-cancel-button {
+  border-radius: .5rem;
+  font-weight: 700;
+  transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+.bulk-selection-button {
+  border: 1px solid var(--brand-red);
+  background: transparent;
+  color: var(--brand-red);
+}
+
+.bulk-selection-button:hover,
+.bulk-selection-button.bulk-selection-active {
+  border-color: var(--brand-red);
+  background: var(--brand-red);
+  color: #fff;
+}
+
+.bulk-selection-button:hover {
+  transform: translateY(-1px);
+}
+
+.bulk-cancel-button {
+  border: 1px solid #cbd5e1;
+  background: var(--card-bg);
+  color: #334155;
+}
+
+.bulk-cancel-button:hover {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+  color: #1e293b;
+  transform: translateY(-1px);
+}
+
+.bulk-actions-count {
+  margin-right: 0;
+  text-align: center;
+  font-weight: 700;
 }
 
 .seat-audit-popover {
@@ -386,6 +520,21 @@ body {
 .audit-user-info strong { font-size: .95rem; }
 .audit-user-info span { color: #b7b8c2; font-size: .72rem; }
 .audit-user-info small { color: #aaaab4; font-size: .75rem; white-space: nowrap; }
+
+@media (max-width: 576px) {
+  .bulk-actions-bar {
+    top: auto;
+    right: .75rem;
+    bottom: .5rem;
+    width: min(240px, calc(100vw - 1.5rem));
+    transform: none;
+  }
+
+  .bulk-actions-count {
+    width: 100%;
+    text-align: center;
+  }
+}
 
 .audit-current-status {
   padding: .35rem .7rem;

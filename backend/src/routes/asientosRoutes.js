@@ -1,6 +1,6 @@
 const express = require('express');
 const verificarToken = require('../middlewares/verificarToken');
-const { listarAsientos, actualizarEstado } = require('../controllers/asientosController');
+const { listarAsientos, actualizarEstado, actualizarEstados } = require('../controllers/asientosController');
 
 const router = express.Router();
 
@@ -9,6 +9,9 @@ router.use(verificarToken);
 
 // Ruta GET para consultar la lista de asientos
 router.get('/', listarAsientos);
+
+// Ruta PATCH para actualizar el estado de varios asientos en una transacción
+router.patch('/estado', actualizarEstados);
 
 // Ruta PATCH para actualizar el estado de un asiento
 router.patch('/:id/estado', actualizarEstado);

@@ -83,6 +83,14 @@
     <div class="tab-content" id="gameTabsContent"></div>
   </main>
 
+  <div id="bulkActionsBar" class="bulk-actions-bar d-none" aria-live="polite">
+    <span class="bulk-actions-badge">0</span>
+    <strong class="bulk-actions-count">asientos seleccionados</strong>
+    <div class="bulk-actions-seats" aria-label="Asientos seleccionados"></div>
+    <button type="button" class="btn bulk-selection-button" data-bulk-toggle>Cambiar estado (0)</button>
+    <button type="button" class="btn bulk-cancel-button" data-cancel-selection>Cancelar</button>
+  </div>
+
   <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">

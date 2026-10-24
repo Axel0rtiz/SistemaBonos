@@ -39,6 +39,8 @@ const seatStatusInput = document.querySelector('#seatStatusInput');
 const saveSeatStatusBtn = document.querySelector('#saveSeatStatusBtn');
 const auditPopover = document.querySelector('#seatAuditPopover');
 let selectedSeatId = null;
+const selectedSeatIds = new Set();
+let selectionMode = false;
 let auditHideTimer = null;
 
 function getToken() {
@@ -64,6 +66,8 @@ let _initialLoadDone = false;
 async function loadSeats() {
   try {
     seats = await apiRequest('/api/asientos');
+    selectedSeatIds.clear();
+    selectionMode = false;
 
     if (!_initialLoadDone) {
       _initialLoadDone = true;
@@ -90,6 +94,7 @@ async function loadSeats() {
     renderTabs();
     renderContent();
     applyFilters();
+    updateBulkControls();
   } catch (error) {
     content.innerHTML = `<div class="alert alert-danger">${escapeHtml(error.message)}</div>`;
   }
@@ -279,12 +284,39 @@ function renderTabs() {
 function renderSeat(seat) {
   const label = statusOptions[seat.status] || seat.status;
   const isLocked = seat.gameDatePassed === true || Number(seat.gameDatePassed) === 1;
-  return `<div class="seat-item">
+  const isSelected = selectionMode && selectedSeatIds.has(seat.id);
+  return `<div class="seat-item ${isSelected ? 'seat-selected' : ''}">
+    <label class="seat-select-label ${selectionMode ? '' : 'd-none'}" title="Seleccionar asiento">
+      <input class="seat-select-checkbox" type="checkbox" data-seat-id="${seat.id}" ${selectedSeatIds.has(seat.id) ? 'checked' : ''} ${isLocked ? 'disabled' : ''} aria-label="Seleccionar ${escapeHtml(formatSeat(seat.seat))}">
+    </label>
     <button class="seat-btn ${escapeHtml(seat.status)} ${isLocked ? 'seat-locked' : ''}" data-seat-id="${seat.id}" data-seat="${escapeHtml(seat.seat)}" data-status="${escapeHtml(seat.status)}" type="button" ${isLocked ? 'disabled title="Partido finalizado: asiento bloqueado"' : ''}>
       <span class="seat-code-main">${escapeHtml(formatSeat(seat.seat, true))}</span>
       <small><span class="seat-status-dot"></span>${escapeHtml(label)}</small>
     </button>
   </div>`;
+}
+
+function updateBulkControls() {
+  const actionsBar = document.querySelector('#bulkActionsBar');
+  const actionsCount = actionsBar?.querySelector('.bulk-actions-count');
+  const actionsBadge = actionsBar?.querySelector('.bulk-actions-badge');
+  const actionsSeats = actionsBar?.querySelector('.bulk-actions-seats');
+  if (actionsBar) actionsBar.classList.toggle('d-none', !selectionMode);
+  if (actionsBadge) actionsBadge.textContent = selectedSeatIds.size;
+  if (actionsCount) actionsCount.textContent = `asiento${selectedSeatIds.size === 1 ? '' : 's'} seleccionado${selectedSeatIds.size === 1 ? '' : 's'}`;
+  if (actionsSeats) {
+    actionsSeats.innerHTML = [...selectedSeatIds].map(seatId => {
+      const seat = seats.find(item => item.id === seatId);
+      return seat ? `<span class="bulk-seat-chip">${escapeHtml(formatSeat(seat.seat, true))}</span>` : '';
+    }).join('');
+  }
+
+  document.querySelectorAll('[data-bulk-toggle]').forEach(button => {
+    button.textContent = selectionMode
+      ? `Cambiar estado (${selectedSeatIds.size})`
+      : 'Seleccionar varios asientos';
+    button.classList.toggle('bulk-selection-active', selectionMode && selectedSeatIds.size > 0);
+  });
 }
 
 function statsHtml(gameSeats) {
@@ -310,7 +342,13 @@ function renderContent() {
             <h2 class="h4 fw-bold mb-1">${escapeHtml(game.label)} ${escapeHtml(game.title)}</h2>
             <p class="text-muted mb-0">${formatDate(game.fecha)}</p>
           </div>
-          <div class="d-flex flex-wrap gap-3 align-items-center small">${Object.entries(statusOptions).map(([status, label]) => `<span><i class="legend-dot dot-${status}"></i>${label}</span>`).join('')}</div>
+          <div class="d-flex flex-wrap gap-3 align-items-center">
+            <div class="d-flex flex-wrap gap-3 align-items-center small">${Object.entries(statusOptions).map(([status, label]) => `<span><i class="legend-dot dot-${status}"></i>${label}</span>`).join('')}</div>
+            <button type="button" class="btn btn-sm bulk-selection-button" data-bulk-toggle>
+              ${selectionMode ? `Cambiar estado (${selectedSeatIds.size})` : 'Seleccionar varios asientos'}
+            </button>
+            ${selectionMode ? '<button type="button" class="btn btn-sm bulk-cancel-button" data-cancel-selection>Cancelar</button>' : ''}
+          </div>
         </div>
         ${statsHtml(gameSeats)}
         <div class="zones-layout">${['superior', 'inferior'].map(zone => {
@@ -341,6 +379,38 @@ async function changeStatus(id, status) {
     alert(error.message);
     return false;
   }
+}
+
+function toggleSelectionMode() {
+  if (selectionMode && selectedSeatIds.size > 0) {
+    openBulkStatusModal();
+    return;
+  }
+
+  selectionMode = !selectionMode;
+  selectedSeatIds.clear();
+  renderContent();
+  applyFilters();
+  updateBulkControls();
+}
+
+function cancelSelectionMode() {
+  selectionMode = false;
+  selectedSeatIds.clear();
+  renderContent();
+  applyFilters();
+  updateBulkControls();
+}
+
+function openBulkStatusModal() {
+  selectedSeatId = null;
+  statusModalLabel.textContent = `Cambiar estado de ${selectedSeatIds.size} asientos`;
+  seatStatusInput.innerHTML = Object.entries(statusOptions)
+    .map(([status, label]) => `<option value="${status}">${label}</option>`).join('');
+  seatStatusInput.disabled = false;
+  saveSeatStatusBtn.disabled = false;
+  seatStatusInput.value = 'available';
+  statusModal.show();
 }
 
 function openStatusModal(button) {
@@ -376,8 +446,46 @@ function bindEvents() {
     applyFilters();
   });
   content.addEventListener('click', event => {
+    const cancelButton = event.target.closest('[data-cancel-selection]');
+    if (cancelButton) {
+      cancelSelectionMode();
+      return;
+    }
+    const bulkButton = event.target.closest('[data-bulk-toggle]');
+    if (bulkButton) {
+      toggleSelectionMode();
+      return;
+    }
     const button = event.target.closest('.seat-btn');
-    if (button) openStatusModal(button);
+    if (!button) return;
+    if (selectionMode) {
+      const seatId = Number(button.dataset.seatId);
+      if (selectedSeatIds.has(seatId)) selectedSeatIds.delete(seatId);
+      else selectedSeatIds.add(seatId);
+      renderContent();
+      applyFilters();
+      updateBulkControls();
+      return;
+    }
+    openStatusModal(button);
+  });
+  document.querySelector('#bulkActionsBar').addEventListener('click', event => {
+    const cancelButton = event.target.closest('[data-cancel-selection]');
+    if (cancelButton) {
+      cancelSelectionMode();
+      return;
+    }
+    const bulkButton = event.target.closest('[data-bulk-toggle]');
+    if (bulkButton) toggleSelectionMode();
+  });
+  content.addEventListener('change', event => {
+    const checkbox = event.target.closest('.seat-select-checkbox');
+    if (!checkbox) return;
+    const seatId = Number(checkbox.dataset.seatId);
+    if (checkbox.checked) selectedSeatIds.add(seatId);
+    else selectedSeatIds.delete(seatId);
+    checkbox.closest('.seat-item')?.classList.toggle('seat-selected', checkbox.checked);
+    updateBulkControls();
   });
   content.addEventListener('pointerover', event => {
     const button = event.target.closest('.seat-btn');
@@ -397,10 +505,28 @@ function bindEvents() {
     if (updated) hideAuditPopover();
   });
   saveSeatStatusBtn.addEventListener('click', async () => {
-    if (!selectedSeatId || !seatStatusInput.value) return;
+    if ((!selectedSeatId && selectedSeatIds.size === 0) || !seatStatusInput.value) return;
     saveSeatStatusBtn.disabled = true;
     saveSeatStatusBtn.textContent = 'Guardando...';
-    const updated = await changeStatus(selectedSeatId, seatStatusInput.value);
+    let updated;
+    if (selectedSeatId) {
+      updated = await changeStatus(selectedSeatId, seatStatusInput.value);
+    } else {
+      try {
+        const result = await apiRequest('/api/asientos/estado', {
+          method: 'PATCH',
+          body: JSON.stringify({ asientoIds: [...selectedSeatIds], estado: seatStatusInput.value })
+        });
+        alert(`${result.updated} asiento${result.updated === 1 ? '' : 's'} actualizado${result.updated === 1 ? '' : 's'}.`);
+        selectionMode = false;
+        selectedSeatIds.clear();
+        await loadSeats();
+        updated = true;
+      } catch (error) {
+        alert(error.message);
+        updated = false;
+      }
+    }
     if (updated) statusModal.hide();
     saveSeatStatusBtn.disabled = false;
     saveSeatStatusBtn.textContent = 'Guardar estado';

@@ -12,6 +12,13 @@ const TRANSICIONES_PERMITIDAS = {
   vendido: ['disponible', 'apartado']
 };
 
+const validarIdsAsientos = (ids) => {
+  if (!Array.isArray(ids) || ids.length === 0 || ids.some(id => !Number.isInteger(id) || id <= 0)) {
+    return null;
+  }
+  return [...new Set(ids)];
+};
+
 //Función para obtener la lista de todos los asientos y el ultimo cambio que se tiene
 const listarAsientos = async (req, res) => {
   try {
@@ -136,4 +143,79 @@ const actualizarEstado = async (req, res) => {
   }
 };
 
-module.exports = { listarAsientos, actualizarEstado };
+// Actualiza varios asientos en una sola transacción y registra cada cambio.
+const actualizarEstados = async (req, res) => {
+  const asientoIds = validarIdsAsientos(req.body.asientoIds);
+  const { estado } = req.body;
+  const estadoDb = ESTADOS_DB[estado];
+
+  if (!asientoIds || !ESTADOS_VALIDOS.includes(estado)) {
+    return res.status(400).json({ message: 'La lista de asientos o el estado son inválidos' });
+  }
+
+  const connection = await db.getConnection();
+  try {
+    await connection.beginTransaction();
+    const placeholders = asientoIds.map(() => '?').join(', ');
+    const [asientos] = await connection.execute(
+      `SELECT app.id_asiento_partido AS id, app.estado,
+              CASE WHEN DATE(p.fecha) < CURDATE() THEN 1 ELSE 0 END AS partido_pasado
+       FROM Asientos_Por_Partido app
+       INNER JOIN Partidos p ON p.id_partido = app.id_partido
+       WHERE app.id_asiento_partido IN (${placeholders})
+       FOR UPDATE`,
+      asientoIds
+    );
+
+    if (asientos.length !== asientoIds.length) {
+      await connection.rollback();
+      return res.status(404).json({ message: 'Uno o más asientos no fueron encontrados' });
+    }
+
+    const asientoBloqueado = asientos.find(asiento => asiento.partido_pasado);
+    if (asientoBloqueado) {
+      await connection.rollback();
+      return res.status(409).json({ message: 'No se pueden modificar asientos de un partido que ya pasó' });
+    }
+
+    const transicionInvalida = asientos.find(asiento =>
+      asiento.estado !== estadoDb && !TRANSICIONES_PERMITIDAS[asiento.estado]?.includes(estadoDb)
+    );
+    if (transicionInvalida) {
+      await connection.rollback();
+      return res.status(409).json({
+        message: `La transición de estado no está permitida para el asiento ${transicionInvalida.id}`
+      });
+    }
+
+    const asientosPorActualizar = asientos.filter(asiento => asiento.estado !== estadoDb);
+    for (const asiento of asientosPorActualizar) {
+      await connection.execute(
+        'UPDATE Asientos_Por_Partido SET estado = ? WHERE id_asiento_partido = ?',
+        [estadoDb, asiento.id]
+      );
+      await connection.execute(
+        `INSERT INTO Historial_Cambios
+          (id_asiento_partido, id_usuario, estado_anterior, estado_nuevo, fecha_cambio)
+         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+        [asiento.id, req.usuario.id, asiento.estado, estadoDb]
+      );
+    }
+
+    await connection.commit();
+    res.json({
+      message: 'Estados actualizados',
+      status: estado,
+      updated: asientosPorActualizar.length,
+      unchanged: asientos.length - asientosPorActualizar.length
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error al actualizar estados de asientos:', error.message);
+    res.status(500).json({ message: 'No se pudieron actualizar los estados de los asientos' });
+  } finally {
+    connection.release();
+  }
+};
+
+module.exports = { listarAsientos, actualizarEstado, actualizarEstados };
